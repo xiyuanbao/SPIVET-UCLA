@@ -1,0 +1,9 @@
+# XB 04162022
+
+ftle-prgrsn.py: 3D backward FTLE in parallel
+forward-ftle-prgrsn.py: 3D forward FTLE in parallel
+ftle-prgrsn-plane.py: the plane version backward FTLE, run extrvel.py to extract plane velocity first
+*-side*: side plane rather than central plane
+*-orig*: serial version instead of parallel computation
+
+
