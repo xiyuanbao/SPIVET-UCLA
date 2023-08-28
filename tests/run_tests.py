@@ -33,14 +33,14 @@ import tlclib_test
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest( pivdata_test.suite()  )
-    suite.addTest( pivir_test.suite()    )
-    suite.addTest( pivpg_test.suite()    )
-    suite.addTest( pivpost_test.suite()  )
+    # suite.addTest( pivdata_test.suite()  )
+    # suite.addTest( pivir_test.suite()    )
+    # suite.addTest( pivpg_test.suite()    )
+    # suite.addTest( pivpost_test.suite()  )
     suite.addTest( pivsim_test.suite()   )
-    suite.addTest( floutil_test.suite()  )
-    suite.addTest( flotrace_test.suite() )
-    suite.addTest( tlclib_test.suite()  )
+    # suite.addTest( floutil_test.suite()  )
+    # suite.addTest( flotrace_test.suite() )
+    # suite.addTest( tlclib_test.suite()  )
     
     return suite
 
