@@ -12,6 +12,7 @@ Matplotlib may have conflict with package (maybe vtk), so install that first:
 `conda install -c conda-forge matplotlib`
 Then general packages:
 ```
+brew install hdf5
 conda install -c anaconda numpy scipy netcdf4 pillow
 conda install -c conda-forge vtk
 ```

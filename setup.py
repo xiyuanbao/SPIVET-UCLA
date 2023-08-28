@@ -12,8 +12,8 @@ include_dirs = [
     lbpath + '/numpy/core/include',
     lbpath + '/numpy/numarray',
     'lib/pivlib/exodusII',
-    #'/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers',
-    '/opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include'
+    '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers',
+    # '/opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include'
 ]
 
 # Setup C modules.

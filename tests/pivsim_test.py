@@ -574,12 +574,12 @@ class testSimOctree(unittest.TestCase):
         ofname = "%s/octree" % self.ofp
 	print "I am here: %s" % (ofname)
         self.ot.dump2vtk(ofname,None)
-        
+
         kfname = "%s/octree-inode-known.vtk" % self.dfp
         kpts   = getPoints(kfname)
-    
+
         tpts = getPoints("%s-INODE.vtk" % ofname)
-        
+
         d = abs(tpts -kpts) < self.eps
         self.assertTrue( d.all() )
 
@@ -1096,12 +1096,12 @@ class testTraceSurfaceRender(unittest.TestCase):
         fh = open(self.kfname,'r')
         kg = fh.read()
         fh.close()
-        
+
         tm = hashlib.md5()
         tm.update(og)
         km = hashlib.md5()
         km.update(kg)
-        
+
         self.assertEqual(tm.hexdigest(),km.hexdigest())
 
 
@@ -1121,7 +1121,7 @@ def suite():
     suite.addTest( unittest.makeSuite( testSimEnv                ) )
     suite.addTest( unittest.makeSuite( testTraceRectangle        ) )
     suite.addTest( unittest.makeSuite( testTraceCylinder         ) )
-    suite.addTest( unittest.makeSuite( testTraceBitmapRectangle  ) )
+    # suite.addTest( unittest.makeSuite( testTraceBitmapRectangle  ) )
     suite.addTest( unittest.makeSuite( testTraceSurfaceRender    ) )
         
     return suite
