@@ -31,6 +31,8 @@ def getPoints(vtkFileName):
     """
     Helper function to read the points array from a VTK file.
     """
+    if not os.path.exists(vtkFileName):
+        raise Exception("The file does not exist.")
     frdr = vtk.vtkPolyDataReader()
     frdr.SetFileName(vtkFileName)
     frdr.Update()
@@ -572,7 +574,6 @@ class testSimOctree(unittest.TestCase):
 
     def testOctreeVTKINode(self):
         ofname = "%s/octree" % self.ofp
-	print "I am here: %s" % (ofname)
         self.ot.dump2vtk(ofname,None)
 
         kfname = "%s/octree-inode-known.vtk" % self.dfp
@@ -591,7 +592,7 @@ class testSimOctree(unittest.TestCase):
         kpts   = getPoints(kfname)
     
         tpts = getPoints("%s-LNODE.vtk" % ofname)
-        
+
         d = abs(tpts -kpts) < self.eps
         self.assertTrue( d.all() )
 
@@ -864,7 +865,7 @@ class testSimEnv(unittest.TestCase):
 
         self.assertEqual(len(insc),1)          # Number of intersections.
         self.assertTrue(insc[0].exflg)         # Exit.
-        self.assertTrue((v < self.eps).all())  
+        self.assertTrue((v < self.eps).all())
 
 
 #################################################################
@@ -912,16 +913,14 @@ class testTraceRectangle(unittest.TestCase):
         ofname = "%s-RAYS-C0.vtk" % self.bofname
         tpts   = getPoints(ofname)
         kfname = "%s/simenv-rect-rays-known.vtk" % self.dfp
-        kpts   = getPoints(kfname)        
-
+        kpts   = getPoints(kfname)
         d = abs(tpts -kpts) < self.eps
         self.assertTrue( d.all(), "RAYS" )
 
         ofname = "%s-LNODE.vtk" % self.bofname
         tpts   = getPoints(ofname)
         kfname = "%s/simenv-rect-lnode-known.vtk" % self.dfp
-        kpts   = getPoints(kfname)        
-
+        kpts   = getPoints(kfname)
         d = abs(tpts -kpts) < self.eps
         self.assertTrue( d.all(), "LNODE" )
         
@@ -1121,7 +1120,7 @@ def suite():
     suite.addTest( unittest.makeSuite( testSimEnv                ) )
     suite.addTest( unittest.makeSuite( testTraceRectangle        ) )
     suite.addTest( unittest.makeSuite( testTraceCylinder         ) )
-    # suite.addTest( unittest.makeSuite( testTraceBitmapRectangle  ) )
+    suite.addTest( unittest.makeSuite( testTraceBitmapRectangle  ) )
     suite.addTest( unittest.makeSuite( testTraceSurfaceRender    ) )
         
     return suite

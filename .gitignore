@@ -2,4 +2,5 @@
 .idea/*
 .python-version/*
 test-output/*
+tests/test-output/*
 build/*
