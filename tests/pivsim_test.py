@@ -29,10 +29,6 @@ def getPoints(vtkFileName):
     """
     Helper function to read the points array from a VTK file.
     """
-    # ibpath = distutils.sysconfig.get_python_inc()
-    # import pdb;pdb.set_trace()
-    if not os.path.exists(vtkFileName):
-        raise Exception("The file does not exist.")
     frdr = vtk.vtkPolyDataReader()
     frdr.SetFileName(vtkFileName)
     frdr.Update()
