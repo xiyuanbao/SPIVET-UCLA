@@ -15,7 +15,8 @@ include_dirs = [
     np.get_include(),
     'lib/pivlib/exodusII',
     # '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers',
-    '/usr/include/lapacke'
+    '/usr/include/lapacke',
+    '/usr/include/openblas'
     # '/opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include'
 ]
 
@@ -25,7 +26,7 @@ ext_modules = []
 module = Extension(
     'spivet.pivlib.pivlibc',
     sources=['lib/spivet/pivlib/pivlibc.c'],
-    libraries=['lapack', 'blas'],
+    libraries=['openblas'],
     include_dirs=include_dirs
 )
 ext_modules.append(module)
@@ -48,7 +49,7 @@ ext_modules.append(module)
 module = Extension(
     'spivet.flolib.floftlec',
     sources=['lib/spivet/flolib/floftlec.c'],
-    libraries=['lapack', 'blas'],
+    libraries=['openblas'],
     include_dirs=include_dirs
 )
 ext_modules.append(module)
@@ -56,7 +57,7 @@ ext_modules.append(module)
 module = Extension(
     'spivet.flolib.flohetc',
     sources=['lib/spivet/flolib/flohetc.c'],
-    libraries=['lapack', 'blas'],
+    libraries=['openblas'],
     include_dirs=include_dirs
 )
 ext_modules.append(module)

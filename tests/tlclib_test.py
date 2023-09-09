@@ -18,6 +18,8 @@ Description:
     Runs various validation tests on the tlclib functions.
 """
 
+from spivet import spivetrev
+
 from spivet import tlclib
 from spivet.tlclib import tlclibc
 from numpy import *
