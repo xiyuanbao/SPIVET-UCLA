@@ -1,4 +1,4 @@
-from distutils.core import setup, Extension
+from setuptools import setup, Extension, find_packages
 import glob
 import distutils.sysconfig
 
@@ -89,6 +89,6 @@ setup(
     description = 'SPIV Library with Thermochromic Thermometry',
     package_dir = {'': 'lib'},
     ext_modules = ext_modules,
-    packages = ['spivet','spivet.pivlib','spivet.tlclib','spivet.flolib'],
-    package_data = package_data
+    packages = find_packages(where='lib'),
+    package_data = package_data,
 )

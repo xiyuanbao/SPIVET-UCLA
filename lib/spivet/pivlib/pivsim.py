@@ -155,7 +155,6 @@ Contents:
     getRayVTKRep()
 
 """
-
 from pivsimc import SimRay, SimIntersection, SimObject, SimSurf, \
     SimCylindricalSurf, SimCircPlanarSurf, SimRectPlanarSurf, \
     SimSphericalSurf, SimRefractiveObject
