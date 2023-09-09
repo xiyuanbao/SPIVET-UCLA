@@ -28,9 +28,9 @@ Description:
 #include <float.h>
 //#include <mkl_lapack.h>
 //typedef MKL_INT lpk_int;
-#include <clapack.h>
+#include <lapacke/lapacke.h>
 
-typedef __CLPK_integer lpk_int;
+typedef lapack_int lpk_int;
 
 //
 // WORKER FUNCTION PROTOTYPES
