@@ -2,6 +2,11 @@ __pycache__
 */__pycache__
 *.log
 *.pyc
-.git/
+.git*
 examples_updated/calibration/
 venv/
+.idea/*
+.python-version
+test-output/*
+tests/test-output/*
+build/*
