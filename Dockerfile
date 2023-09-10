@@ -1,6 +1,8 @@
 # Start with a CentOS 7 base image
 FROM centos:7
 
+RUN yum clean all
+
 # Install necessary tools, libraries, and development tools
 RUN yum install -y epel-release && \
     # Install necessary tools, libraries, and development tools
