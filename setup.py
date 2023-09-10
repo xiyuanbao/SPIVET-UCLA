@@ -15,10 +15,7 @@ include_dirs = [
     np.get_include(),
     'lib/pivlib/exodusII',
     '/usr/include',
-    # '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers',
     '/usr/include/lapacke',
-    # '/usr/include/openblas' # use this for centos.dockerfile
-    # '/opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include'
 ]
 
 # Setup C modules.
@@ -28,7 +25,6 @@ module = Extension(
     'spivet.pivlib.pivlibc',
     sources=['lib/spivet/pivlib/pivlibc.c'],
     libraries=['lapack', 'blas'],
-    # libraries=['openblas'], # use this for centos.dockerfile
     include_dirs=include_dirs
 )
 ext_modules.append(module)
@@ -52,7 +48,6 @@ module = Extension(
     'spivet.flolib.floftlec',
     sources=['lib/spivet/flolib/floftlec.c'],
     libraries=['lapack', 'blas'],
-    # libraries=['openblas'], # use this for centos.dockerfile
     include_dirs=include_dirs
 )
 ext_modules.append(module)
@@ -61,7 +56,6 @@ module = Extension(
     'spivet.flolib.flohetc',
     sources=['lib/spivet/flolib/flohetc.c'],
     libraries=['lapack', 'blas'],
-    # libraries=['openblas'], # use this for centos.dockerfile
     include_dirs=include_dirs
 )
 ext_modules.append(module)
