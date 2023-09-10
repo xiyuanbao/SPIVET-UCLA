@@ -7,3 +7,5 @@ pillow
 vtk
 matplotlib
 opencv-python==3.4.2.17
+pytest
+Cython>=0.19
