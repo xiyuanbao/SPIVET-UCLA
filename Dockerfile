@@ -43,7 +43,7 @@ ENV LIBRARY_PATH /usr/lib64/openblas:$LIBRARY_PATH
 ENV C_INCLUDE_PATH /usr/include/openblas:$C_INCLUDE_PATH
 
 # Install the required Python packages
-RUN pip install numpy scipy configparser cftime==1.0.4 pillow vtk matplotlib opencv-python==3.4.2.17 pytest Cython>=0.19 netCDF4==1.5.4
+RUN pip install -r requirements.txt
 
 # Clean build artifacts to ensure a clean build and Install the package using setup.py
 RUN python2.7 setup.py clean && \
