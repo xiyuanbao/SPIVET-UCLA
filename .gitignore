@@ -4,3 +4,4 @@
 test-output/*
 tests/test-output/*
 build/*
+venv/*
