@@ -28,7 +28,8 @@ Description:
 #include <float.h>
 //#include <mkl_lapack.h>
 //typedef MKL_INT lpk_int;
-#include <lapacke/lapacke.h>
+//#include <lapacke/lapacke.h> // use this for centos.dockerfile
+#include <lapacke.h> // use this for py27.dockerfile
 
 typedef lapack_int lpk_int;
 

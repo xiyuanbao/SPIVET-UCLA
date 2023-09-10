@@ -29,7 +29,8 @@ Description:
 //#include <mkl_lapack.h>
 //#include <mkl_cblas.h>
 //typedef MKL_INT lpk_int;
-#include <lapacke/lapacke.h>
+//#include <lapacke/lapacke.h> // use this for centos.dockerfile
+#include <lapacke.h> // use this for py27.dockerfile
 #include <cblas.h>
 
 typedef lapack_int lpk_int;
