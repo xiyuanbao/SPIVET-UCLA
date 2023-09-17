@@ -155,7 +155,6 @@ Contents:
     getRayVTKRep()
 
 """
-
 from pivsimc import SimRay, SimIntersection, SimObject, SimSurf, \
     SimCylindricalSurf, SimCircPlanarSurf, SimRectPlanarSurf, \
     SimSphericalSurf, SimRefractiveObject
@@ -311,7 +310,7 @@ class SimCylinder(SimRefractiveObject):
         po.CappingOn()
 
         if ( not compat.checkNone(( not compat.checkNone(scname) ) and ( scint) ) ):
-            po.GetOutput().Update()
+            po.Update()
             ncells = po.GetOutput().GetNumberOfCells()
             da = vtk.vtkIntArray()
             da.Allocate(ncells,ncells)
@@ -320,7 +319,7 @@ class SimCylinder(SimRefractiveObject):
             for i in range(ncells):
                 da.InsertNextValue(scint)
 
-            po.GetOutput().Update()
+            po.Update()
             po.GetOutput().GetCellData().SetScalars(da)    
 
         # Transform to parent coordinates.  Note: VTK uses a righthanded
@@ -341,18 +340,20 @@ class SimCylinder(SimRefractiveObject):
             tmat.SetElement(i,3,self.pos[2-i])
 
         m2htfrm = vtk.vtkMatrixToLinearTransform()
-        m2htfrm.SetInput(tmat) 
+        m2htfrm.SetInput(tmat)
 
         tfrm.Concatenate(m2htfrm)
 
         tfltr = vtk.vtkTransformPolyDataFilter()
         tfltr.SetTransform(tfrm)
-        tfltr.SetInput(po.GetOutput())
+        tfltr.SetInputData(po.GetOutput())
+        tfltr.Update()
 
         # Insert the transformed object.
         apd = vtk.vtkAppendPolyData()
-        apd.AddInput(pd)
-        apd.AddInput(tfltr.GetOutput())
+        apd.AddInputData(pd)
+        apd.AddInputData(tfltr.GetOutput())
+        apd.Update()
 
         return apd.GetOutput()
 
@@ -469,7 +470,7 @@ class SimRectangle(SimRefractiveObject):
         po.SetXLength(2*self.m_prm[2])
 
         if ( not compat.checkNone(( not compat.checkNone(scname) ) and ( scint) ) ):
-            po.GetOutput().Update()
+            po.Update()
             ncells = po.GetOutput().GetNumberOfCells()
             da = vtk.vtkIntArray()
             da.Allocate(ncells,ncells)
@@ -478,7 +479,7 @@ class SimRectangle(SimRefractiveObject):
             for i in range(ncells):
                 da.InsertNextValue(scint)
 
-            po.GetOutput().Update()
+            po.Update()
             po.GetOutput().GetCellData().SetScalars(da)
 
         # Transform to parent coordinates.  Note: VTK uses a righthanded
@@ -498,12 +499,14 @@ class SimRectangle(SimRefractiveObject):
 
         tfltr = vtk.vtkTransformPolyDataFilter()
         tfltr.SetTransform(m2htfrm)
-        tfltr.SetInput(po.GetOutput())
+        tfltr.SetInputData(po.GetOutput())
+        tfltr.Update()
 
         # Insert the transformed object.
         apd = vtk.vtkAppendPolyData()
-        apd.AddInput(pd)
-        apd.AddInput(tfltr.GetOutput())
+        apd.AddInputData(pd)
+        apd.AddInputData(tfltr.GetOutput())
+        apd.Update()
 
         return apd.GetOutput()
 
@@ -585,7 +588,7 @@ class SimSphere(SimRefractiveObject):
         po.SetThetaResolution(SIM_VTKRES)
 
         if ( not compat.checkNone(( not compat.checkNone(scname) ) and ( scint) ) ):
-            po.GetOutput().Update()
+            po.Update()
             ncells = po.GetOutput().GetNumberOfCells()
             da = vtk.vtkIntArray()
             da.Allocate(ncells,ncells)
@@ -594,12 +597,13 @@ class SimSphere(SimRefractiveObject):
             for i in range(ncells):
                 da.InsertNextValue(scint)
 
-            po.GetOutput().Update()
+            po.Update()
             po.GetOutput().GetCellData().SetScalars(da)
 
         apd = vtk.vtkAppendPolyData()
-        apd.AddInput(pd)
-        apd.AddInput(po.GetOutput())
+        apd.AddInputData(pd)
+        apd.AddInputData(po.GetOutput())
+        apd.Update()
 
         return apd.GetOutput()
 
@@ -838,11 +842,10 @@ class SimEnv(SimRectangle):
                 for r in self.m_camrays[c]:
                     getRayVTKRep(r,rpd)
 
-                dw.SetInput(rpd)
+                dw.SetInputData(rpd)
                 dw.SetFileName("%s-RAYS-C%i.vtk" % (bofpath,c))
                 dw.SetFileTypeToASCII()
-                dw.Write()        
-        
+                dw.Write()
         # Process octree.
         self.m_octree.dump2vtk(bofpath,mxlevel)
 
@@ -1314,6 +1317,7 @@ class SimOctree(SimInternalNode):
         inn   = 0
         lnpf  = zeros(self.root.cleafid,dtype=bool)
         while ( len(queue) > 0 ):
+
             node = queue.pop(0)
             if ( node.level > mxlevel ):
                 break
@@ -1439,12 +1443,12 @@ class SimOctree(SimInternalNode):
         # Process nodes.
         [ipd,lpd] = self.__getOctreeVTKRep__(ipd,lpd,mxlevel)
         
-        dw.SetInput(ipd)
+        dw.SetInputData(ipd)
         dw.SetFileName("%s-INODE.vtk" % bofpath)
         dw.SetFileTypeToASCII()
         dw.Write()
 
-        dw.SetInput(lpd)
+        dw.SetInputData(lpd)
         dw.SetFileName("%s-LNODE.vtk" % bofpath)
         dw.SetFileTypeToASCII()
         dw.Write()

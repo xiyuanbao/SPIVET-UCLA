@@ -1,0 +1,10 @@
+numpy
+scipy
+configparser
+cftime==1.0.4
+netcdf4==1.5.4
+pillow
+vtk
+matplotlib
+opencv-python==3.4.2.17
+cython

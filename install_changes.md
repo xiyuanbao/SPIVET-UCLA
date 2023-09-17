@@ -11,6 +11,15 @@ python -m ipykernel install --user --name py27_new
 Matplotlib may have conflict with package (maybe vtk), so install that first:
 `conda install -c conda-forge matplotlib`
 Then general packages:
+Install with pip
+```
+brew install hdf5
+export HDF5_DIR=$(brew --prefix hdf5)
+brew install netcdf
+export NETCDF4_DIR=$(brew --prefix netcdf)
+pip install -r requirements.txt
+```
+Install with conda
 ```
 conda install -c anaconda numpy scipy netcdf4 pillow
 conda install -c conda-forge vtk
