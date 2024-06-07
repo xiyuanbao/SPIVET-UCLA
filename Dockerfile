@@ -32,9 +32,17 @@ RUN pip install -r requirements.txt
 # Install the package using setup.py
 RUN pip install .
 
+RUN git clone https://github.com/xiyuanbao/openpiv-python-gpu.git
+WORKDIR /app/openpiv-python-gpu
+RUN python setup.py build_ext -i
+RUN python setup.py install
+
+WORKDIR /app
 # Clone the pyflow repository
 RUN git clone https://github.com/pathak22/pyflow.git
 
 # Navigate to the cloned directory and build the extension
 WORKDIR /app/pyflow
 RUN python setup.py build_ext -i
+
+WORKDIR /app
