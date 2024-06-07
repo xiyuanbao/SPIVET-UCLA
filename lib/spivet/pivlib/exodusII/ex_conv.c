@@ -1,578 +1,548 @@
 /*
- * Copyright (c) 2005 Sandia Corporation. Under the terms of Contract
- * DE-AC04-94AL85000 with Sandia Corporation, the U.S. Governement
- * retains certain rights in this software.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- * 
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- * 
- *     * Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials provided
- *       with the distribution.  
- * 
- *     * Neither the name of Sandia Corporation nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ * Copyright(C) 1999-2021 National Technology & Engineering Solutions
+ * of Sandia, LLC (NTESS).  Under the terms of Contract DE-NA0003525 with
+ * NTESS, the U.S. Government retains certain rights in this software.
+ *
+ * See packages/seacas/LICENSE for details
  */
-/*****************************************************************************
-*
-* exutils - exodus utilities
-*
-* entry conditions - 
-*
-* exit conditions - 
-*
-* revision history - 
-*
-*  $Id: ex_conv.c,v 1.5 2007/10/08 15:01:37 gdsjaar Exp $
-*
-*****************************************************************************/
 
-#include <stdlib.h>
-#include "exodusII.h"
-#include "exodusII_int.h"
+#include "exodusII.h"     // for ex_err, etc
+#include "exodusII_int.h" // for ex__file_item, EX_FATAL, etc
+#include "stdbool.h"
 
-typedef int convert_task;
-
-/* this file contains code needed to support the various floating point word
+/*! \file
+ * this file contains code needed to support the various floating point word
  * size combinations for computation and i/o that applications might want to
- * use.  the following discussion uses the C type names "float" and "double".
+ * use. See the netcdf documentation for more details on the floating point
+ * conversion capabilities.
  *
  * netCDF supports two floating point word sizes for its files:
- *      NC_FLOAT  - 32 bit IEEE (in XDR parlance, XDR_FLOAT)
- *      NC_DOUBLE - 64 bit IEEE (in XDR parlance, XDR_DOUBLE)
- * now, if you want to write an array of NC_FLOATs, netCDF expects as input
- * an array of native floats; NC_DOUBLEs require an input array of native
- * doubles.
- *
- * so, suppose you're computing using variables declared double, but you want
- * to write a netCDF file using NC_FLOATs.  you need to copy your array into
- * a buffer array declared as float, which truncates your data from double to
- * float (type conversion).  then you can pass the buffer array to netCDF 
- * routines for output as NC_FLOATs, and everything will work OK.  similarly,
- * if you are computing in floats but want to write NC_DOUBLEs, you need to 
- * copy your data into a buffer array declared as double, which promotes it
- * from float to double, and then call the netCDF routine with the buffer array.
- *
- * these routines are designed to do this type conversion, based on information
- * given in the ex_open or ex_create calls.  thus, except for when the file is
- * opened, the user is relieved of the burden of caring about compute word size
- * (the size of floating point variables used in the application program, and
- * passed into the EXODUS II calls) and i/o word size (the size of floating
- * point data as written in the netCDF file).
- *
- * this code is supposed to be general enough to handle weird cases like the
- * cray, where in C (and C++) both floats and doubles are 8 byte quantities.
- * thus the same array can be passed into a netCDF routine to write either
- * NC_FLOATs or NC_DOUBLEs.
- *
- * note: 16 byte floating point values, such as might be obtained from an ANSI C
- *       "long double", are specifically not handled.  Also, I don't know how
- *       the vanilla netCDF interface handles double precision on a CRAY, which
- *       gives 16 byte values, but these routines as written won't be able to
- *       handle it.
+ *   - NC_FLOAT  - 32 bit IEEE
+ *   - NC_DOUBLE - 64 bit IEEE
  *
  */
 
 #define NC_FLOAT_WORDSIZE 4
-#define NC_DOUBLE_WORDSIZE 8
 
-enum conv_action { NO_CONVERSION, CONVERT_UP, CONVERT_DOWN };
-typedef int conv_action;
+static struct ex__file_item *file_list = NULL;
 
-struct file_item {
-  int                   file_id;
-  conv_action           rd_conv_action;
-  conv_action           wr_conv_action;
-  nc_type               netcdf_type_code;
-  int                   user_compute_wordsize;
-  struct file_item*     next;
-};
-
-struct file_item* file_list = NULL;
-
-/*
- * Now recognized at more locations worldwide in this file...
- */
-
-static size_t cur_len = 0;                       /* in bytes! */
-static void* buffer_array = NULL;
-static int do_conversion = 0; /* Do any files do a conversion? */
-
-#define FIND_FILE(ptr,id) { ptr = file_list;                    \
-                            while(ptr) {                        \
-                              if( ptr->file_id == id ) break;   \
-                              ptr = ptr->next;                  \
-                            }                                   \
-                          }
-
-/*............................................................................*/
-/*............................................................................*/
-
-int ex_conv_ini( int  exoid,
-		 int* comp_wordsize,
-		 int* io_wordsize,
-		 int  file_wordsize )
+struct ex__file_item *ex__find_file_item(int exoid)
 {
-  char errmsg[MAX_ERR_LENGTH];
-  struct file_item* new_file;
-
-/* ex_conv_ini() initializes the floating point conversion process.
- *
- * exoid                an integer uniquely identifying the file of interest.
- *
- * word size parameters are specified in bytes. valid values are 0, 4, and 8:
- *
- * comp_wordsize        compute floating point word size in the user's code.
- *                      a zero value indicates that the user is requesting the 
- *                      default float size for the machine. The appropriate 
- *                      value is chosen and returned in comp_wordsize, and used
- *                      in subsequent conversions.  a valid but inappropriate 
- *                      for this parameter cannot be detected.
- *
- * io_wordsize          the desired floating point word size for a netCDF file.
- *                      for an existing file, if this parameter doesn't match
- *                      the word size of data already stored in the file, a
- *                      fatal error is generated.  a value of 0 for an existing
- *                      file indicates that the word size of the file was not
- *                      known a priori, so use whatever is in the file.  a value
- *                      of 0 for a new file means to use the default size, an
- *                      NC_FLOAT (4 bytes).  when a value of 0 is specified the
- *                      actual value used is returned in io_wordsize.
- *
- * file_wordsize        floating point word size in an existing netCDF file.
- *                      a value of 0 should be passed in for a new netCDF file.
- */
-
-/* check to make sure machine word sizes aren't weird (I'm paranoid) */
-
-  if ((sizeof(float)  != 4 && sizeof(float)  != 8) ||
-      (sizeof(double) != 4 && sizeof(double) != 8 ) )
-  {
-    sprintf(errmsg,"Error: unsupported compute word size for file id: %d",
-            exoid);
-    ex_err("ex_conv_ini",errmsg,EX_FATAL);
-    return(EX_FATAL);
+  /* Find base filename in case exoid refers to a group */
+  int                   base_exoid = (unsigned)exoid & EX_FILE_ID_MASK;
+  struct ex__file_item *ptr        = file_list;
+  while (ptr) {
+    if (ptr->file_id == base_exoid) {
+      break;
+    }
+    ptr = ptr->next;
   }
+  return (ptr);
+}
 
-/* check to see if requested word sizes are valid */
+#define EX__MAX_PATHLEN 8192
+int ex__check_multiple_open(const char *path, int mode, const char *func)
+{
+  EX_FUNC_ENTER();
+  bool                  is_write = mode & EX_WRITE;
+  char                  tmp[EX__MAX_PATHLEN];
+  size_t                pathlen;
+  struct ex__file_item *ptr = file_list;
+  while (ptr) {
+    nc_inq_path(ptr->file_id, &pathlen, tmp);
+    /* If path is too long, assume it is ok... */
+    if (pathlen < EX__MAX_PATHLEN && strncmp(path, tmp, EX__MAX_PATHLEN) == 0) {
+      /* Found matching file.  See if any open for write */
+      if (ptr->is_write || is_write) {
+        char errmsg[MAX_ERR_LENGTH];
+        snprintf(errmsg, MAX_ERR_LENGTH,
+                 "ERROR: The file '%s' is open for both read and write."
+                 " File corruption or incorrect behavior can occur.\n",
+                 path);
+        ex_err(func, errmsg, EX_BADFILEID);
+#if defined BUILT_IN_SIERRA
+        EX_FUNC_LEAVE(EX_NOERR);
+#else
+        EX_FUNC_LEAVE(EX_FATAL);
+#endif
+      }
+    }
+    ptr = ptr->next;
+  }
+  EX_FUNC_LEAVE(EX_NOERR);
+}
 
-  if (!*io_wordsize )
-  {
-    if (!file_wordsize )
+int ex__check_valid_file_id(int exoid, const char *func)
+{
+  bool error = false;
+  if (exoid <= 0) {
+    error = true;
+  }
+#if !defined BUILT_IN_SIERRA
+  else {
+    struct ex__file_item *file = ex__find_file_item(exoid);
+
+    if (!file) {
+      error = true;
+    }
+  }
+#endif
+
+  if (error) {
+    int old_opt = ex_opts(EX_VERBOSE);
+    if (old_opt & EX_ABORT) {
+      ex_opts(EX_VERBOSE | EX_ABORT);
+    }
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH,
+             "ERROR: In \"%s\", the file id %d was not obtained via a call "
+             "to \"ex_open\" or \"ex_create\".\n\t\tIt does not refer to a "
+             "valid open exodus file.\n\t\tAborting to avoid file "
+             "corruption or data loss or other potential problems.",
+             func, exoid);
+    ex_err(__func__, errmsg, EX_BADFILEID);
+    ex_opts(old_opt);
+    return EX_FATAL;
+  }
+  return EX_NOERR;
+}
+
+int ex__conv_init(int exoid, int *comp_wordsize, int *io_wordsize, int file_wordsize,
+                  int int64_status, bool is_parallel, bool is_hdf5, bool is_pnetcdf, bool is_write)
+{
+  char                  errmsg[MAX_ERR_LENGTH];
+  struct ex__file_item *new_file = NULL;
+
+  /*! ex__conv_init() initializes the floating point conversion process.
+   *
+   * \param exoid         an integer uniquely identifying the file of interest.
+   *
+   * \param comp_wordsize compute floating point word size in the user's code.
+   *                      a zero value indicates that the user is requesting the
+   *                      default float size for the machine. The appropriate
+   *                      value is chosen and returned in comp_wordsize, and
+   *                      used in subsequent conversions.  a valid but
+   *                      inappropriate for this parameter cannot be detected.
+   *
+   * \param io_wordsize   the desired floating point word size for a netCDF
+   *                      file. For an existing file, if this parameter doesn't
+   *                      match the word size of data already stored in the file,
+   *                      a fatal error is generated.  a value of 0 for an
+   *                      existing file indicates that the word size of the file
+   *                      was not known a priori, so use whatever is in the file.
+   *                      a value of 0 for a new file means to use the default
+   *                      size, an NC_FLOAT (4 bytes).  when a value of 0 is
+   *                      specified the actual value used is returned in
+   *                      io_wordsize.
+   *
+   * \param file_wordsize floating point word size in an existing netCDF file.
+   *                      a value of 0 should be passed in for a new netCDF
+   *                      file.
+   *
+   * \param int64_status  the flags specifying how integer values should be
+   *                      stored on the database and how they should be
+   *                      passes through the api functions.
+   *
+   * \param is_parallel   1 if parallel file; 0 if serial
+   *
+   * \param is_hdf5       1 if parallel netcdf-4 mode; 0 if not.
+   *
+   * \param is_pnetcdf    1 if parallel PNetCDF file; 0 if not.
+   *
+   * \param is_write      1 if output file; 0 if readonly
+   *
+   * word size parameters are specified in bytes. valid values are 0, 4, and 8:
+   */
+
+  EX_FUNC_ENTER();
+
+  /* check to make sure machine word sizes are sane */
+/* If the following line causes a compile-time error, then there is a problem
+ * which will cause exodus to not work correctly on this platform.
+ *
+ * Contact Greg Sjaardema, gdsjaar@sandia.gov for asisstance.
+ */
+#define CT_ASSERT(e) extern char(*ct_assert(void))[sizeof(char[1 - 2 * !(e)])]
+  CT_ASSERT((sizeof(float) == 4 || sizeof(float) == 8) &&
+            (sizeof(double) == 4 || sizeof(double) == 8));
+
+  /* check to see if requested word sizes are valid */
+  if (!*io_wordsize) {
+    if (!file_wordsize) {
       *io_wordsize = NC_FLOAT_WORDSIZE;
-    else
+    }
+    else {
       *io_wordsize = file_wordsize;
+    }
   }
-  else if (*io_wordsize != 4 && *io_wordsize != 8 )
-  {
-    sprintf(errmsg,"Error: unsupported I/O word size for file id: %d",exoid);
-    ex_err("ex_conv_ini",errmsg,EX_FATAL);
-    return(EX_FATAL);
+
+  else if (*io_wordsize != 4 && *io_wordsize != 8) {
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: unsupported I/O word size for file id: %d", exoid);
+    ex_err_fn(exoid, __func__, errmsg, EX_BADPARAM);
+    EX_FUNC_LEAVE(EX_FATAL);
   }
-  else if (file_wordsize && *io_wordsize != file_wordsize )
-  {
+
+  else if (file_wordsize && *io_wordsize != file_wordsize) {
     *io_wordsize = file_wordsize;
-    sprintf(errmsg,
-           "Error: invalid I/O word size specified for existing file id: %d",
-            exoid);
-    ex_err("ex_conv_ini",errmsg,EX_MSG);
-    ex_err("ex_conv_ini",
-           "       Requested I/O word size overridden.",
-            EX_MSG);
+    snprintf(errmsg, MAX_ERR_LENGTH,
+             "ERROR: invalid I/O word size specified for existing file id: "
+             "%d, Requested I/O word size overridden.",
+             exoid);
+    ex_err_fn(exoid, __func__, errmsg, EX_BADPARAM);
   }
 
-  if (!*comp_wordsize )
+  if (!*comp_wordsize) {
+    *comp_wordsize = sizeof(float);
+  }
+  else if (*comp_wordsize != 4 && *comp_wordsize != 8) {
+    ex_err_fn(exoid, __func__, "ERROR: invalid compute wordsize specified", EX_BADPARAM);
+    EX_FUNC_LEAVE(EX_FATAL);
+  }
+
+  /* Check that the int64_status contains only valid bits... */
   {
-      *comp_wordsize = sizeof(float);
+    int valid_int64 = EX_ALL_INT64_API | EX_ALL_INT64_DB;
+    if ((int64_status & valid_int64) != int64_status) {
+      snprintf(errmsg, MAX_ERR_LENGTH,
+               "Warning: invalid int64_status flag (%d) specified for "
+               "existing file id: %d. Ignoring invalids",
+               int64_status, exoid);
+      ex_err_fn(exoid, __func__, errmsg, -EX_BADPARAM);
+    }
+    int64_status &= valid_int64;
   }
-  else if (*comp_wordsize != 4 && *comp_wordsize != 8 )
-  {
-    ex_err("ex_conv_ini","Error: invalid compute wordsize specified",EX_FATAL);
-    return(EX_FATAL);
+
+  /* Verify filetype
+   *  0 -- classic format   (NC_FORMAT_CLASSIC -1)
+   *  1 -- 64 bit classic   (NC_FORMAT_64BIT   -1)
+   *  2 -- netcdf4          (NC_FORMAT_NETCDF4 -1)
+   *  3 -- netcdf4 classic  (NC_FORMAT_NETCDF4_CLASSIC -1)
+   */
+
+  int filetype = 0;
+  nc_inq_format(exoid, &filetype);
+
+  if (!(new_file = malloc(sizeof(struct ex__file_item)))) {
+    snprintf(errmsg, MAX_ERR_LENGTH,
+             "ERROR: failed to allocate memory for internal file "
+             "structure storage file id %d",
+             exoid);
+    ex_err_fn(exoid, __func__, errmsg, EX_MEMFAIL);
+    EX_FUNC_LEAVE(EX_FATAL);
   }
 
-/* finally, set up conversion action */
+  new_file->file_id               = exoid;
+  new_file->user_compute_wordsize = *comp_wordsize == 4 ? 0 : 1;
+  new_file->int64_status          = int64_status;
+  new_file->maximum_name_length   = ex__default_max_name_length;
+  new_file->time_varid            = -1;
+  new_file->compression_algorithm = EX_COMPRESS_GZIP;
+  new_file->assembly_count        = 0;
+  new_file->blob_count            = 0;
+  new_file->compression_level     = 0;
+  new_file->shuffle               = 0;
+  new_file->file_type             = filetype - 1;
+  new_file->is_parallel           = is_parallel;
+  new_file->is_hdf5               = is_hdf5;
+  new_file->is_pnetcdf            = is_pnetcdf;
+  new_file->has_nodes             = 1; /* default to yes in case not set */
+  new_file->has_edges             = 1;
+  new_file->has_faces             = 1;
+  new_file->has_elems             = 1;
+  new_file->is_write              = is_write;
 
-  new_file = malloc(sizeof(struct file_item));
-
-  new_file->file_id = exoid;
-  new_file->user_compute_wordsize = *comp_wordsize;
   new_file->next = file_list;
-  file_list = new_file;
+  file_list      = new_file;
 
-/* crays writing NC_FLOATs always hit this case first since on a cray
- * sizeof(float) = sizeof(double)
- */
-  if( *comp_wordsize == sizeof(float) &&
-      *io_wordsize   == NC_FLOAT_WORDSIZE ) {
-
-    new_file->rd_conv_action = NO_CONVERSION;
-    new_file->wr_conv_action = NO_CONVERSION;
+  if (*io_wordsize == NC_FLOAT_WORDSIZE) {
     new_file->netcdf_type_code = NC_FLOAT;
   }
-/* crays writing NC_DOUBLEs always hit this case first since on a cray
- * sizeof(float) = sizeof(double)
- */
-  else if( *comp_wordsize == sizeof(double) &&
-           *io_wordsize   == NC_DOUBLE_WORDSIZE ) {
-
-    new_file->rd_conv_action = NO_CONVERSION;
-    new_file->wr_conv_action = NO_CONVERSION;
+  else {
     new_file->netcdf_type_code = NC_DOUBLE;
   }
-  else if( *comp_wordsize == sizeof(double) &&
-           *io_wordsize   == NC_FLOAT_WORDSIZE ) {
 
-    new_file->rd_conv_action = CONVERT_UP;
-    new_file->wr_conv_action = CONVERT_DOWN;
-    new_file->netcdf_type_code = NC_FLOAT;
-    do_conversion = 1;
-  }
-  else if( *comp_wordsize == sizeof(float) &&
-           *io_wordsize   == NC_DOUBLE_WORDSIZE ) {
-
-    new_file->rd_conv_action = CONVERT_DOWN;
-    new_file->wr_conv_action = CONVERT_UP;
-    new_file->netcdf_type_code = NC_DOUBLE;
-    do_conversion = 1;
-  }
-  else
-  {
-    /* Invalid compute or io wordsize: i.e. 4 byte compute word on Cray */
-    sprintf(errmsg,"Error: invalid compute (%d) or io (%d) wordsize specified",
-                    *comp_wordsize, *io_wordsize);
-    ex_err("ex_conv_ini", errmsg, EX_FATAL);
-    return(EX_FATAL);
-  }
-    
-  return(EX_NOERR);
-
+  EX_FUNC_LEAVE(EX_NOERR);
 }
 
 /*............................................................................*/
 /*............................................................................*/
 
-void ex_conv_exit( int exoid )
-{
-/* ex_conv_exit() takes the structure identified by "exoid" out of the linked
+/*! ex__conv_exit() takes the structure identified by "exoid" out of the linked
  * list which describes the files that ex_conv_array() knows how to convert.
  *
- * NOTE: it is absolutely necessary for ex_conv_array() to be called after
+ * \note it is absolutely necessary for ex__conv_exit() to be called after
  *       ncclose(), if the parameter used as "exoid" is the id returned from
  *       an ncopen() or nccreate() call, as netCDF reuses file ids!
  *       the best place to do this is ex_close(), which is where I did it.
  *
- * "exoid" is some integer which uniquely identifies the file of interest.
+ * \param exoid  integer which uniquely identifies the file of interest.
  */
+void ex__conv_exit(int exoid)
+{
+  struct ex__file_item *file = file_list;
+  struct ex__file_item *prev = NULL;
 
-  char errmsg[MAX_ERR_LENGTH];
-  struct file_item* file = file_list;
-  struct file_item* prev = NULL;
-
-  exerrval = 0; /* clear error code */
-  while( file )
-  {
-    if (file->file_id == exoid ) break;
+  EX_FUNC_ENTER();
+  while (file) {
+    if (file->file_id == exoid) {
+      break;
+    }
 
     prev = file;
     file = file->next;
   }
 
-  if (!file )
-  {
-    sprintf(errmsg,"Warning: failure to clear file id %d - not in list.",exoid);
-    ex_err("ex_conv_exit",errmsg,EX_MSG);
-    exerrval = EX_BADFILEID;
-    return;
+  if (!file) {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "Warning: failure to clear file id %d - not in list.", exoid);
+    ex_err(__func__, errmsg, -EX_BADFILEID);
+    EX_FUNC_VOID();
   }
 
-  if (prev )
+  if (prev) {
     prev->next = file->next;
-  else
+  }
+  else {
     file_list = file->next;
+  }
 
-  free( file );
+  free(file);
+  EX_FUNC_VOID();
+}
 
-  /*
-   * If no other files are opened, any buffer arrays for float/double 
-   * conversion ought to be cleaned up.
+/*............................................................................*/
+/*............................................................................*/
+
+nc_type nc_flt_code(int exoid)
+{
+  /*!
+   * \ingroup Utilities
+   * nc_flt_code() returns either NC_FLOAT or NC_DOUBLE, based on the parameters
+   * with which ex__conv_init() was called.  nc_flt_code() is used as the nc_type
+   * parameter on ncvardef() calls that define floating point variables.
+   *
+   * "exoid" is some integer which uniquely identifies the file of interest.
    */
-  if ( !file_list )
-  {
-    if ( cur_len > 0 )
-      {
-        free(buffer_array);     /* Better not be null if condition true! */
-        buffer_array = NULL;
-        cur_len = 0;
+  EX_FUNC_ENTER();
+  struct ex__file_item *file = ex__find_file_item(exoid);
+
+  if (!file) {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: unknown file id %d for nc_flt_code().", exoid);
+    ex_err(__func__, errmsg, EX_BADFILEID);
+    EX_FUNC_LEAVE((nc_type)-1);
+  }
+  EX_FUNC_LEAVE(file->netcdf_type_code);
+}
+
+unsigned ex_int64_status(int exoid)
+{
+  /*!
+   * \ingroup Utilities
+     ex_int64_status() returns an int that can be tested
+     against the defines listed below to determine which, if any,
+     'types' in the database are to be stored as int64 types and which, if any,
+     types are passed/returned as int64 types in the API
+
+     | Defines: | |
+     |----------|-|
+     | #EX_MAPS_INT64_DB | All maps (id, order, ...) store int64_t values |
+     | #EX_IDS_INT64_DB  | All entity ids (sets, blocks, maps) are int64_t values |
+     | #EX_BULK_INT64_DB | All integer bulk data (local indices, counts, maps); not ids |
+     | #EX_ALL_INT64_DB  | (#EX_MAPS_INT64_DB \| #EX_IDS_INT64_DB \| #EX_BULK_INT64_DB) |
+     | #EX_MAPS_INT64_API| All maps (id, order, ...) passed as int64_t values |
+     | #EX_IDS_INT64_API | All entity ids (sets, blocks, maps) are passed as int64_t values |
+     | #EX_BULK_INT64_API| All integer bulk data (local indices, counts, maps); not ids|
+     | #EX_INQ_INT64_API | Integers passed to/from ex_inquire() are int64_t |
+     | #EX_ALL_INT64_API | (#EX_MAPS_INT64_API \| #EX_IDS_INT64_API \| #EX_BULK_INT64_API \|
+   #EX_INQ_INT64_API) |
+  */
+  EX_FUNC_ENTER();
+  struct ex__file_item *file = ex__find_file_item(exoid);
+
+  if (!file) {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: unknown file id %d for ex_int64_status().", exoid);
+    ex_err(__func__, errmsg, EX_BADFILEID);
+    EX_FUNC_LEAVE(0);
+  }
+  EX_FUNC_LEAVE(file->int64_status);
+}
+
+int ex_set_int64_status(int exoid, int mode)
+{
+  /*!
+    \ingroup Utilities
+
+     ex_set_int64_status() sets the value of the INT64_API flags which
+     specify how integer types are passed/returned as int64 types in
+     the API
+
+     | Mode can be one of: | |
+     |----------|-|
+     | 0                 | All integers are passed as int32_t values. |
+     | #EX_MAPS_INT64_API| All maps (id, order, ...) passed as int64_t values |
+     | #EX_IDS_INT64_API | All entity ids (sets, blocks, maps) are passed as int64_t values |
+     | #EX_BULK_INT64_API| All integer bulk data (local indices, counts, maps); not ids|
+     | #EX_INQ_INT64_API | Integers passed to/from ex_inquire() are int64_t |
+     | #EX_ALL_INT64_API | (#EX_MAPS_INT64_API \| #EX_IDS_INT64_API \| #EX_BULK_INT64_API \|
+    #EX_INQ_INT64_API) |
+  */
+  EX_FUNC_ENTER();
+  struct ex__file_item *file = ex__find_file_item(exoid);
+
+  if (!file) {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: unknown file id %d for ex_int64_status().", exoid);
+    ex_err(__func__, errmsg, EX_BADFILEID);
+    EX_FUNC_LEAVE(0);
+  }
+
+  /* Strip of all non-INT64_API values */
+  int api_mode = mode & EX_ALL_INT64_API;
+  int db_mode  = file->int64_status & EX_ALL_INT64_DB;
+
+  file->int64_status = api_mode | db_mode;
+  EX_FUNC_LEAVE(file->int64_status);
+}
+
+/*!
+  \ingroup Utilities
+  \undoc
+*/
+int ex_set_option(int exoid, ex_option_type option, int option_value)
+{
+  EX_FUNC_ENTER();
+  struct ex__file_item *file = ex__find_file_item(exoid);
+  if (!file) {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: unknown file id %d for ex_set_option().", exoid);
+    ex_err(__func__, errmsg, EX_BADFILEID);
+    EX_FUNC_LEAVE(EX_FATAL);
+  }
+
+  switch (option) {
+  case EX_OPT_MAX_NAME_LENGTH: file->maximum_name_length = option_value; break;
+  case EX_OPT_COMPRESSION_TYPE: file->compression_algorithm = option_value; break;
+  case EX_OPT_COMPRESSION_LEVEL: /* 0 (disabled/fastest) ... 9 (best/slowest) */
+    /* Check whether file type supports compression... */
+    if (file->is_hdf5) {
+      int value = option_value;
+      if (file->compression_algorithm == EX_COMPRESS_ZLIB) {
+        if (value > 9) {
+          value = 9;
+        }
+        if (value < 0) {
+          value = 0;
+        }
       }
-    do_conversion = 0;
+      else if (file->compression_algorithm == EX_COMPRESS_SZIP) {
+        if (value % 2 != 0 || value < 4 || value > 32) {
+          char errmsg[MAX_ERR_LENGTH];
+          snprintf(errmsg, MAX_ERR_LENGTH,
+                   "ERROR: invalid value %d for SZIP Compression.  Must be even and 4 <= value <= "
+                   "32. Ignoring.",
+                   value);
+          ex_err_fn(exoid, __func__, errmsg, EX_BADPARAM);
+          EX_FUNC_LEAVE(EX_FATAL);
+        }
+      }
+      file->compression_level = value;
+      assert(value == file->compression_level);
+    }
+    else {
+      file->compression_level = 0;
+    }
+    break;
+  case EX_OPT_COMPRESSION_SHUFFLE: /* 0 (disabled); 1 (enabled) */
+    file->shuffle = option_value != 0 ? 1 : 0;
+    break;
+  case EX_OPT_INTEGER_SIZE_API: /* See *_INT64_* values above */
+    ex_set_int64_status(exoid, option_value);
+    break;
+  case EX_OPT_INTEGER_SIZE_DB: /* (query only) */ break;
+  default: {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: invalid option %d for ex_set_option().", (int)option);
+    ex_err_fn(exoid, __func__, errmsg, EX_BADPARAM);
+    EX_FUNC_LEAVE(EX_FATAL);
   }
+  }
+  EX_FUNC_LEAVE(EX_NOERR);
 }
 
-/*............................................................................*/
-/*............................................................................*/
-
-nc_type nc_flt_code( int exoid )
-{
-/* nc_flt_code() returns either NC_FLOAT or NC_DOUBLE, based on the parameters
- * with which ex_conv_ini() was called.  nc_flt_code() is used as the nc_type
- * parameter on ncvardef() calls that define floating point variables.
- *
- * "exoid" is some integer which uniquely identifies the file of interest.
- */
-
-  char errmsg[MAX_ERR_LENGTH];
-  struct file_item* file;
-
-  exerrval = 0; /* clear error code */
-  FIND_FILE( file, exoid );
-
-  if (!file )
-  {
-    exerrval = EX_BADFILEID;
-    sprintf(errmsg,"Error: unknown file id %d for nc_flt_code().",exoid);
-    ex_err("nc_flt_code",errmsg,exerrval);
-    return (nc_type) -1;
-  }
-
-  return file->netcdf_type_code;
-}
-
-/*............................................................................*/
-/*............................................................................*/
-
-int ex_comp_ws( int exoid )
-{
-/* "exoid" is some integer which uniquely identifies the file of interest.
- *
- * ex_comp_ws() returns 4 (i.e. sizeof(float)) or 8 (i.e. sizeof(double)),
+/*!
+ * \ingroup Utilities
+ * ex__comp_ws() returns 4 (i.e. sizeof(float)) or 8 (i.e. sizeof(double)),
  * depending on the value of floating point word size used to initialize
  * the conversion facility for this file id (exoid).
+ * \param exoid  integer which uniquely identifies the file of interest.
  */
+int ex__comp_ws(int exoid)
+{
+  struct ex__file_item *file = ex__find_file_item(exoid);
 
-  char errmsg[MAX_ERR_LENGTH];
-  struct file_item* file;
-
-  exerrval = 0; /* clear error code */
-  FIND_FILE( file, exoid );
-
-  if (!file )
-  {
-    exerrval = EX_BADFILEID;
-    sprintf(errmsg,"Error: unknown file id %d",exoid);
-    ex_err("ex_comp_ws",errmsg,exerrval);
-    return(EX_FATAL);
+  if (!file) {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: unknown file id %d", exoid);
+    ex_err(__func__, errmsg, EX_BADFILEID);
+    return (EX_FATAL);
   }
-
-  return file->user_compute_wordsize;
+  /* Stored as 0 for 4-byte; 1 for 8-byte */
+  return ((file->user_compute_wordsize + 1) * 4);
 }
 
-/*............................................................................*/
-/*............................................................................*/
-
-/* some utility routines for use only by ex_conv_array() */
-
-#define BUFFER_SIZE_UNIT 8192   /* should be even multiple of sizeof(double) */
-
-void* resize_buffer( void* buffer,
-                     size_t   new_len )            /* in bytes! */
-{
-  /*
-   * Broaden the scope of this puppy to aid cleanup in ex_conv_exit().
-   */
-
-  /* static int cur_len = 0;                       in bytes! */
-
-  exerrval = 0; /* clear error code */
-  if( new_len > cur_len )
-  {
-
-    cur_len = BUFFER_SIZE_UNIT * ( new_len/BUFFER_SIZE_UNIT + 1 );
-  
-    if( buffer ) free( buffer );
-    buffer = malloc( cur_len );
-
-    if (!buffer )
-    {
-      exerrval = EX_MEMFAIL;
-      ex_err("ex_conv_array","couldn't allocate buffer space",exerrval);
-      return (NULL);
-    }
-  }
-  return buffer;
-}
-
-void flt_to_dbl( float*  in_vec,
-                 size_t     len,
-                 double* out_vec )
-{
-  size_t i;
-
-  for( i=0; i<len; i++ ) out_vec[i] = (double)(in_vec[i]);
-}
-
-void dbl_to_flt( double* in_vec,
-                 size_t     len,
-                 float*  out_vec )
-{
-  size_t i;
-
-  for( i=0; i<len; i++ ) out_vec[i] = (float)(in_vec[i]);
-}
-
-
-/*............................................................................*/
-/*............................................................................*/
-
-void* ex_conv_array( int          exoid,
-                     convert_task task,
-                     const void*  usr_array,
-                     size_t          usr_length )
-{
-/* ex_conv_array() actually performs the floating point size conversion.
- *
- * "exoid" is some integer which uniquely identifies the file of interest.
- *
- * for reads, in conjunction with ncvarget()/ncvarget1(), ex_conv_array() must
- * be called twice per read.  the first call must be before ncvarget(), and
- * should be something like ex_conv_array( id, RTN_ADDRESS, usr_array, len ),
- * where "usr_array" is the address of the user's data array, and "len" is
- * the number of floating point values to convert.  this call returns an
- * address which should be passed as a parameter in the subsequent ncvarget()
- * call.  after ncvarget(), call ex_conv_array() again with something like
- * ex_conv_array( ID, READ_CONVERT, usr_array, len ).  here ex_conv_array()
- * should return NULL.
- *
- * for writes, in conjunction with ncvarput()/ncvarput1(), ex_conv_array() need
- * only be called once, before the call to ncvarput().  the call should be
- * something like ex_conv_array( id, WRITE_CONVERT, usr_array, len ), and
- * returns an address that should be passed in the subsequent ncvarput() call.
+/*!
+ * \ingroup Utilities
+ * ex__is_parallel() returns 1 (true) or 0 (false) depending on whether
+ * the file was opened in parallel or serial/file-per-processor mode.
+ * Note that in this case parallel assumes the output of a single file,
+ * not a parallel run using file-per-processor.
+ * \param exoid  integer which uniquely identifies the file of interest.
  */
+int ex__is_parallel(int exoid)
+{
+  EX_FUNC_ENTER();
+  struct ex__file_item *file = ex__find_file_item(exoid);
 
+  if (!file) {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: unknown file id %d", exoid);
+    ex_err(__func__, errmsg, EX_BADFILEID);
+    EX_FUNC_LEAVE(EX_FATAL);
+  }
+  /* Stored as 1 for parallel, 0 for serial or file-per-processor */
+  EX_FUNC_LEAVE(file->is_parallel);
+}
 
-  char errmsg[MAX_ERR_LENGTH];
-  /*  static void* buffer_array = NULL; -- now global! */
-  struct file_item* file;
-  size_t len_bytes;
+/*!
+ * \ingroup Utilities
+ * \note
+ * Do not use this unless you know what you are doing and why you
+ * are doing it.  One use is if calling ex_get_partial_set() in a
+ * serial mode (proc 0 only) on a file opened in parallel.
+ * Make sure to reset the value to original value after done with
+ * special case...
+ *
+ * ex_set_parallel() sets the parallel setting for a file.
+ * returns 1 (true) or 0 (false) depending on the current setting.
+ * \param exoid  integer which uniquely identifies the file of interest.
+ * \param is_parallel 1 if parallel, 0 if serial.
+ */
+int ex_set_parallel(int exoid, int is_parallel)
+{
+  EX_FUNC_ENTER();
+  struct ex__file_item *file = ex__find_file_item(exoid);
 
-  exerrval = 0; /* clear error code */
-  if (do_conversion == 0) {
-    switch( task ) {
-
-    case RTN_ADDRESS:
-      return (void*)usr_array;
-      break;
-    case READ_CONVERT:
-      return NULL;
-      break;
-    case WRITE_CONVERT:
-      return (void*)usr_array;
-      break;
-    default:
-      /* Fall through if other task is specified */
-      ;
-    }
+  if (!file) {
+    char errmsg[MAX_ERR_LENGTH];
+    snprintf(errmsg, MAX_ERR_LENGTH, "ERROR: unknown file id %d", exoid);
+    ex_err(__func__, errmsg, EX_BADFILEID);
+    EX_FUNC_LEAVE(EX_FATAL);
   }
 
-  FIND_FILE( file, exoid );
-
-  if( !file )
-  {
-    exerrval = EX_BADFILEID;
-    sprintf(errmsg,"Error: unknown file id %d",exoid);
-    ex_err("ex_conv_array",errmsg,exerrval);
-    return (NULL);
-  }
-
-
-  switch( task ) {
-
-  case RTN_ADDRESS:
-
-    switch( file->rd_conv_action ) {
-    case NO_CONVERSION:
-      return (void*)usr_array;
-    case CONVERT_UP: /* file ws: 4 byte, CPU ws: 8 byte */
-      len_bytes = usr_length * sizeof(float);
-      buffer_array = resize_buffer( buffer_array, len_bytes );
-      return buffer_array;
-    case CONVERT_DOWN: /* file ws: 8 byte, CPU ws: 4 byte */
-      len_bytes = usr_length * sizeof(double);
-      buffer_array = resize_buffer( buffer_array, len_bytes );
-      return buffer_array;
-    }
-    break;
-
-  case READ_CONVERT:
-
-    switch( file->rd_conv_action ) {
-    case NO_CONVERSION:
-      break;
-    case CONVERT_UP:
-      flt_to_dbl( buffer_array, usr_length, (void*)usr_array );
-      break;
-    case CONVERT_DOWN:
-      dbl_to_flt( buffer_array, usr_length, (void*)usr_array );
-      break;
-    }
-    return NULL;
-
-  case WRITE_CONVERT:
-
-    switch( file->wr_conv_action ) {
-    case NO_CONVERSION:
-      return (void*)usr_array;
-    case CONVERT_UP:
-      len_bytes = usr_length * sizeof(double);
-      buffer_array = resize_buffer( buffer_array, len_bytes );
-      flt_to_dbl( (void*)usr_array, usr_length, buffer_array );
-      return buffer_array;
-    case CONVERT_DOWN:
-      len_bytes = usr_length * sizeof(float);
-      buffer_array = resize_buffer( buffer_array, len_bytes );
-      dbl_to_flt( (void*)usr_array, usr_length, buffer_array );
-      return buffer_array;
-    }
-    break;
-
-  case WRITE_CONVERT_DOWN:
-
-    len_bytes = usr_length * sizeof(float);
-    buffer_array = resize_buffer( buffer_array, len_bytes );
-    dbl_to_flt( (void*)usr_array, usr_length, buffer_array );
-    return buffer_array;
-
-  case WRITE_CONVERT_UP:
-
-    len_bytes = usr_length * sizeof(double);
-    buffer_array = resize_buffer( buffer_array, len_bytes );
-    flt_to_dbl( (void*)usr_array, usr_length, buffer_array );
-    return buffer_array;
-
-  }
-
-  exerrval = EX_FATAL;
-  sprintf(errmsg,
-       "Error: unknown task code %d specified for converting float array",task);
-  ex_err("ex_conv_array",errmsg,exerrval);
-  return NULL;
+  int old_value     = file->is_parallel;
+  file->is_parallel = is_parallel;
+  /* Stored as 1 for parallel, 0 for serial or file-per-processor */
+  EX_FUNC_LEAVE(old_value);
 }

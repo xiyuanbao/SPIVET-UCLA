@@ -597,263 +597,263 @@ static PyObject *ex2lib_ex_put_coord_names(PyObject *self, PyObject *args) {
 //***************************************************************
 // ex_get_node_num_map
 //
-static PyObject *ex2lib_ex_get_node_num_map(PyObject *self, PyObject *args) {
-  int exoid, rval, num_nodes, comp_ws, io_ws;
-  npy_intp npy_num_nodes;
-  float fdmy;
-  char cdmy;
-  PyArrayObject *node_map;
-  int *ptr_node_map;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii):ex_get_node_num_map",
-                        &exoid,&comp_ws,&io_ws)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_inquire(exoid,EX_INQ_NODES,&num_nodes,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  npy_num_nodes = num_nodes;
-
-  node_map = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_nodes,PyArray_INT,
-                                            PyArray_CORDER);
-  if ( node_map == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_node_map = (int *)PyArray_DATA(node_map);
-
-  rval = ex_get_node_num_map(exoid,ptr_node_map);
-  if ( rval < 0 ) {
-    cleanup_po(1,node_map);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(node_map);
-}
+//ex_get_node_num_mapstatic PyObject *ex2lib_ex_get_node_num_map(PyObject *self, PyObject *args) {
+//  int exoid, rval, num_nodes, comp_ws, io_ws;
+//  npy_intp npy_num_nodes;
+//  float fdmy;
+//  char cdmy;
+//  PyArrayObject *node_map;
+//  int *ptr_node_map;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii):ex_get_node_num_map",
+//                        &exoid,&comp_ws,&io_ws)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_NODES,&num_nodes,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  npy_num_nodes = num_nodes;
+//
+//  node_map = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_nodes,PyArray_INT,
+//                                            PyArray_CORDER);
+//  if ( node_map == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_node_map = (int *)PyArray_DATA(node_map);
+//
+//  rval = ex_get_node_num_map(exoid,ptr_node_map);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,node_map);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(node_map);
+//}
 
 
 //***************************************************************
 // ex_put_node_num_map
 //
-static PyObject *ex2lib_ex_put_node_num_map(PyObject *self, PyObject *args) {
-  int exoid, rval, comp_ws, io_ws;
-  PyObject *onode_map;
-  PyArrayObject *node_map;
-  int *ptr_node_map;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)O:ex_put_node_num_map",
-                        &exoid, &comp_ws, &io_ws, &onode_map)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  node_map = (PyArrayObject *)intarray(onode_map,1,1);
-  if ( node_map == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_node_map = (int *)PyArray_DATA(node_map);
-
-  rval = ex_put_node_num_map(exoid,ptr_node_map);
-
-  cleanup_po(1,node_map);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_node_num_map(PyObject *self, PyObject *args) {
+//  int exoid, rval, comp_ws, io_ws;
+//  PyObject *onode_map;
+//  PyArrayObject *node_map;
+//  int *ptr_node_map;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)O:ex_put_node_num_map",
+//                        &exoid, &comp_ws, &io_ws, &onode_map)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  node_map = (PyArrayObject *)intarray(onode_map,1,1);
+//  if ( node_map == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_node_map = (int *)PyArray_DATA(node_map);
+//
+//  rval = ex_put_node_num_map(exoid,ptr_node_map);
+//
+//  cleanup_po(1,node_map);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_elem_num_map
 //
-static PyObject *ex2lib_ex_get_elem_num_map(PyObject *self, PyObject *args) {
-  int exoid, rval, num_elem, comp_ws, io_ws;
-  npy_intp npy_num_elem;
-  float fdmy;
-  char cdmy;
-  PyArrayObject *elem_map;
-  int *ptr_elem_map;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii):ex_get_elem_num_map",
-                        &exoid, &comp_ws, &io_ws)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_inquire(exoid,EX_INQ_ELEM,&num_elem,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  npy_num_elem = num_elem;
-
-  elem_map = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_elem,PyArray_INT,
-                                            PyArray_CORDER);
-  if ( elem_map == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_elem_map = (int *)PyArray_DATA(elem_map);
-
-  rval = ex_get_elem_num_map(exoid,ptr_elem_map);
-  if ( rval < 0 ) {
-    cleanup_po(1,elem_map);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(elem_map);
-}
+//static PyObject *ex2lib_ex_get_elem_num_map(PyObject *self, PyObject *args) {
+//  int exoid, rval, num_elem, comp_ws, io_ws;
+//  npy_intp npy_num_elem;
+//  float fdmy;
+//  char cdmy;
+//  PyArrayObject *elem_map;
+//  int *ptr_elem_map;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii):ex_get_elem_num_map",
+//                        &exoid, &comp_ws, &io_ws)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_ELEM,&num_elem,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  npy_num_elem = num_elem;
+//
+//  elem_map = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_elem,PyArray_INT,
+//                                            PyArray_CORDER);
+//  if ( elem_map == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_elem_map = (int *)PyArray_DATA(elem_map);
+//
+//  rval = ex_get_elem_num_map(exoid,ptr_elem_map);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,elem_map);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(elem_map);
+//}
 
 
 //***************************************************************
 // ex_put_elem_num_map
 //
-static PyObject *ex2lib_ex_put_elem_num_map(PyObject *self, PyObject *args) {
-  int exoid, rval, comp_ws, io_ws;
-  PyObject *oelem_map;
-  PyArrayObject *elem_map;
-  int *ptr_elem_map;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)O:ex_put_elem_num_map",
-                        &exoid, &comp_ws, &io_ws, &oelem_map)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  elem_map = (PyArrayObject *)intarray(oelem_map,1,1);
-  if ( elem_map == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_elem_map = (int *)PyArray_DATA(elem_map);
-
-  rval = ex_put_elem_num_map(exoid,ptr_elem_map);
-
-  cleanup_po(1,elem_map);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_elem_num_map(PyObject *self, PyObject *args) {
+//  int exoid, rval, comp_ws, io_ws;
+//  PyObject *oelem_map;
+//  PyArrayObject *elem_map;
+//  int *ptr_elem_map;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)O:ex_put_elem_num_map",
+//                        &exoid, &comp_ws, &io_ws, &oelem_map)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  elem_map = (PyArrayObject *)intarray(oelem_map,1,1);
+//  if ( elem_map == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_elem_map = (int *)PyArray_DATA(elem_map);
+//
+//  rval = ex_put_elem_num_map(exoid,ptr_elem_map);
+//
+//  cleanup_po(1,elem_map);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_map
 //
-static PyObject *ex2lib_ex_get_map(PyObject *self, PyObject *args) {
-  int exoid, rval, num_elem, comp_ws, io_ws;
-  npy_intp npy_num_elem;
-  float fdmy;
-  char cdmy;
-  PyArrayObject *elem_map;
-  int *ptr_elem_map;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii):ex_get_map",
-                        &exoid, &comp_ws, &io_ws)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_inquire(exoid,EX_INQ_ELEM,&num_elem,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  npy_num_elem = num_elem;
-
-  elem_map = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_elem,PyArray_INT,
-                                            PyArray_CORDER);
-
-  if ( elem_map == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_elem_map = (int *)PyArray_DATA(elem_map);
-
-  rval = ex_get_map(exoid,ptr_elem_map);
-  if ( rval < 0 ) {
-    cleanup_po(1,elem_map);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(elem_map);
-}
+//static PyObject *ex2lib_ex_get_map(PyObject *self, PyObject *args) {
+//  int exoid, rval, num_elem, comp_ws, io_ws;
+//  npy_intp npy_num_elem;
+//  float fdmy;
+//  char cdmy;
+//  PyArrayObject *elem_map;
+//  int *ptr_elem_map;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii):ex_get_map",
+//                        &exoid, &comp_ws, &io_ws)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_ELEM,&num_elem,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  npy_num_elem = num_elem;
+//
+//  elem_map = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_elem,PyArray_INT,
+//                                            PyArray_CORDER);
+//
+//  if ( elem_map == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_elem_map = (int *)PyArray_DATA(elem_map);
+//
+//  rval = ex_get_map(exoid,ptr_elem_map);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,elem_map);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(elem_map);
+//}
 
 
 //***************************************************************
 // ex_put_map
 //
-static PyObject *ex2lib_ex_put_map(PyObject *self, PyObject *args) {
-  int exoid, rval, comp_ws, io_ws;
-  PyObject *oelem_map;
-  PyArrayObject *elem_map;
-  int *ptr_elem_map;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)O:ex_put_map",
-                        &exoid, &comp_ws, &io_ws, &oelem_map)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  elem_map = (PyArrayObject *)intarray(oelem_map,1,1);
-  if ( elem_map == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_elem_map = (int *)PyArray_DATA(elem_map);
-
-  rval = ex_put_map(exoid,ptr_elem_map);
-
-  cleanup_po(1,elem_map);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_map(PyObject *self, PyObject *args) {
+//  int exoid, rval, comp_ws, io_ws;
+//  PyObject *oelem_map;
+//  PyArrayObject *elem_map;
+//  int *ptr_elem_map;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)O:ex_put_map",
+//                        &exoid, &comp_ws, &io_ws, &oelem_map)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  elem_map = (PyArrayObject *)intarray(oelem_map,1,1);
+//  if ( elem_map == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_elem_map = (int *)PyArray_DATA(elem_map);
+//
+//  rval = ex_put_map(exoid,ptr_elem_map);
+//
+//  cleanup_po(1,elem_map);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_elem_block
 //
-static PyObject *ex2lib_ex_get_elem_block(PyObject *self, PyObject *args) {
-  int exoid, elem_blk_id, num_elem_this_blk, num_nodes_per_elem, num_attr, rval;
-  int comp_ws, io_ws;
-  char elem_type[MAX_STR_LENGTH+1];
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_elem_block",
-                        &exoid, &comp_ws, &io_ws, &elem_blk_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_elem_block(exoid,elem_blk_id,elem_type,&num_elem_this_blk,
-                           &num_nodes_per_elem,&num_attr);
-  if ( rval != 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("siii",elem_type,num_elem_this_blk,num_nodes_per_elem,
-                       num_attr);
-}
+//static PyObject *ex2lib_ex_get_elem_block(PyObject *self, PyObject *args) {
+//  int exoid, elem_blk_id, num_elem_this_blk, num_nodes_per_elem, num_attr, rval;
+//  int comp_ws, io_ws;
+//  char elem_type[MAX_STR_LENGTH+1];
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_elem_block",
+//                        &exoid, &comp_ws, &io_ws, &elem_blk_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_elem_block(exoid,elem_blk_id,elem_type,&num_elem_this_blk,
+//                           &num_nodes_per_elem,&num_attr);
+//  if ( rval != 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("siii",elem_type,num_elem_this_blk,num_nodes_per_elem,
+//                       num_attr);
+//}
 
 
 //***************************************************************
 // ex_put_elem_block
 //
-static PyObject *ex2lib_ex_put_elem_block(PyObject *self, PyObject *args) {
-  int exoid, elem_blk_id, num_elem_this_blk, num_nodes_per_elem, num_attr, rval;
-  int comp_ws, io_ws;
-  char *elem_type;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)isiii:ex_put_elem_block",
-                        &exoid, &comp_ws, &io_ws, &elem_blk_id, &elem_type,
-                        &num_elem_this_blk, &num_nodes_per_elem, &num_attr)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_put_elem_block(exoid,elem_blk_id,elem_type,num_elem_this_blk,
-                           num_nodes_per_elem,num_attr);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_elem_block(PyObject *self, PyObject *args) {
+//  int exoid, elem_blk_id, num_elem_this_blk, num_nodes_per_elem, num_attr, rval;
+//  int comp_ws, io_ws;
+//  char *elem_type;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)isiii:ex_put_elem_block",
+//                        &exoid, &comp_ws, &io_ws, &elem_blk_id, &elem_type,
+//                        &num_elem_this_blk, &num_nodes_per_elem, &num_attr)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_put_elem_block(exoid,elem_blk_id,elem_type,num_elem_this_blk,
+//                           num_nodes_per_elem,num_attr);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
@@ -900,998 +900,998 @@ static PyObject *ex2lib_ex_get_elem_blk_ids(PyObject *self, PyObject *args) {
 //***************************************************************
 // ex_get_elem_conn
 //
-static PyObject *ex2lib_ex_get_elem_conn(PyObject *self, PyObject *args) {
-  int exoid, elem_blk_id, rval, num_elem_this_block, num_nodes_per_elem;
-  int num_attr, comp_ws, io_ws;
-  npy_intp sz;
-  PyArrayObject *conn;
-  int *ptr_conn;
-  char elem_type[MAX_STR_LENGTH+1];
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_elem_conn",
-                        &exoid, &comp_ws, &io_ws, &elem_blk_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_elem_block(exoid,elem_blk_id,elem_type,&num_elem_this_block,
-                           &num_nodes_per_elem,&num_attr);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  sz = num_elem_this_block*num_nodes_per_elem;
-
-  conn = (PyArrayObject *)PyArray_EMPTY(1,&sz,PyArray_INT,PyArray_CORDER);
-  if ( conn == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_conn = (int *)PyArray_DATA(conn);
-
-  rval = ex_get_elem_conn(exoid,elem_blk_id,ptr_conn);
-  if ( rval < 0 ) {
-    cleanup_po(1,conn);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(conn);
-}
+//static PyObject *ex2lib_ex_get_elem_conn(PyObject *self, PyObject *args) {
+//  int exoid, elem_blk_id, rval, num_elem_this_block, num_nodes_per_elem;
+//  int num_attr, comp_ws, io_ws;
+//  npy_intp sz;
+//  PyArrayObject *conn;
+//  int *ptr_conn;
+//  char elem_type[MAX_STR_LENGTH+1];
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_elem_conn",
+//                        &exoid, &comp_ws, &io_ws, &elem_blk_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_elem_block(exoid,elem_blk_id,elem_type,&num_elem_this_block,
+//                           &num_nodes_per_elem,&num_attr);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  sz = num_elem_this_block*num_nodes_per_elem;
+//
+//  conn = (PyArrayObject *)PyArray_EMPTY(1,&sz,PyArray_INT,PyArray_CORDER);
+//  if ( conn == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_conn = (int *)PyArray_DATA(conn);
+//
+//  rval = ex_get_elem_conn(exoid,elem_blk_id,ptr_conn);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,conn);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(conn);
+//}
 
 
 //***************************************************************
 // ex_put_elem_conn
 //
-static PyObject *ex2lib_ex_put_elem_conn(PyObject *self, PyObject *args) {
-  int exoid, elem_blk_id, rval, comp_ws, io_ws;
-  PyObject *oconn;
-  PyArrayObject *conn;
-  int *ptr_conn;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iO:ex_put_elem_conn",
-                        &exoid, &comp_ws, &io_ws, &elem_blk_id, &oconn)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  conn = (PyArrayObject *)intarray(oconn,1,1);
-  if ( conn == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_conn = (int *)PyArray_DATA(conn);
-
-  rval = ex_put_elem_conn(exoid,elem_blk_id,ptr_conn);
-
-  cleanup_po(1,conn);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_elem_conn(PyObject *self, PyObject *args) {
+//  int exoid, elem_blk_id, rval, comp_ws, io_ws;
+//  PyObject *oconn;
+//  PyArrayObject *conn;
+//  int *ptr_conn;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iO:ex_put_elem_conn",
+//                        &exoid, &comp_ws, &io_ws, &elem_blk_id, &oconn)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  conn = (PyArrayObject *)intarray(oconn,1,1);
+//  if ( conn == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_conn = (int *)PyArray_DATA(conn);
+//
+//  rval = ex_put_elem_conn(exoid,elem_blk_id,ptr_conn);
+//
+//  cleanup_po(1,conn);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_elem_attr
 //
-static PyObject *ex2lib_ex_get_elem_attr(PyObject *self, PyObject *args) {
-  int exoid, elem_blk_id, rval, num_elem_this_block, num_nodes_per_elem;
-  int num_attr, comp_ws, io_ws, fdtype;
-  npy_intp sz;
-  char elem_type[MAX_STR_LENGTH+1];
-  PyArrayObject *attr;
-  void *ptr_attr;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_elem_attr",
-                        &exoid, &comp_ws, &io_ws, &elem_blk_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_elem_block(exoid,elem_blk_id,elem_type,&num_elem_this_block,
-                           &num_nodes_per_elem,&num_attr);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  sz = num_elem_this_block*num_attr;
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  attr = (PyArrayObject *)PyArray_EMPTY(1,&sz,fdtype,PyArray_CORDER);
-  if ( attr == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_attr = (void *)PyArray_DATA(attr);
-
-  rval = ex_get_elem_attr(exoid,elem_blk_id,ptr_attr);
-  if ( rval < 0 ) {
-    cleanup_po(1,attr);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(attr);
-}
+//static PyObject *ex2lib_ex_get_elem_attr(PyObject *self, PyObject *args) {
+//  int exoid, elem_blk_id, rval, num_elem_this_block, num_nodes_per_elem;
+//  int num_attr, comp_ws, io_ws, fdtype;
+//  npy_intp sz;
+//  char elem_type[MAX_STR_LENGTH+1];
+//  PyArrayObject *attr;
+//  void *ptr_attr;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_elem_attr",
+//                        &exoid, &comp_ws, &io_ws, &elem_blk_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_elem_block(exoid,elem_blk_id,elem_type,&num_elem_this_block,
+//                           &num_nodes_per_elem,&num_attr);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  sz = num_elem_this_block*num_attr;
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  attr = (PyArrayObject *)PyArray_EMPTY(1,&sz,fdtype,PyArray_CORDER);
+//  if ( attr == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_attr = (void *)PyArray_DATA(attr);
+//
+//  rval = ex_get_elem_attr(exoid,elem_blk_id,ptr_attr);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,attr);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(attr);
+//}
 
 
 //***************************************************************
 // ex_put_elem_attr
 //
-static PyObject *ex2lib_ex_put_elem_attr(PyObject *self, PyObject *args) {
-  int exoid, elem_blk_id, rval, comp_ws, io_ws, fdtype;
-  PyObject *oattr;
-  PyArrayObject *attr;
-  void *ptr_attr;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iO:ex_put_elem_attr",
-                        &exoid, &comp_ws, &io_ws, &elem_blk_id, &oattr)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  attr = (PyArrayObject *)fparray(oattr,fdtype,1,1);
-  if ( attr == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_attr = (void *)PyArray_DATA(attr);
-
-  rval = ex_put_elem_attr(exoid,elem_blk_id,ptr_attr);
-
-  cleanup_po(1,attr);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_elem_attr(PyObject *self, PyObject *args) {
+//  int exoid, elem_blk_id, rval, comp_ws, io_ws, fdtype;
+//  PyObject *oattr;
+//  PyArrayObject *attr;
+//  void *ptr_attr;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iO:ex_put_elem_attr",
+//                        &exoid, &comp_ws, &io_ws, &elem_blk_id, &oattr)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  attr = (PyArrayObject *)fparray(oattr,fdtype,1,1);
+//  if ( attr == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_attr = (void *)PyArray_DATA(attr);
+//
+//  rval = ex_put_elem_attr(exoid,elem_blk_id,ptr_attr);
+//
+//  cleanup_po(1,attr);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_node_set_param
 //
-static PyObject *ex2lib_ex_get_node_set_param(PyObject *self, PyObject *args) {
-  int exoid, node_set_id, num_nodes_in_set, num_dist_in_set, rval, comp_ws;
-  int io_ws;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_node_set_param",
-                        &exoid, &comp_ws, &io_ws, &node_set_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_node_set_param(exoid,node_set_id,&num_nodes_in_set,
-                               &num_dist_in_set);
-
-  if ( rval != 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("ii",num_nodes_in_set,num_dist_in_set);
-}
+//static PyObject *ex2lib_ex_get_node_set_param(PyObject *self, PyObject *args) {
+//  int exoid, node_set_id, num_nodes_in_set, num_dist_in_set, rval, comp_ws;
+//  int io_ws;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_node_set_param",
+//                        &exoid, &comp_ws, &io_ws, &node_set_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_node_set_param(exoid,node_set_id,&num_nodes_in_set,
+//                               &num_dist_in_set);
+//
+//  if ( rval != 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("ii",num_nodes_in_set,num_dist_in_set);
+//}
 
 
 //***************************************************************
 // ex_put_node_set_param
 //
-static PyObject *ex2lib_ex_put_node_set_param(PyObject *self, PyObject *args) {
-  int exoid, node_set_id, num_nodes_in_set, num_dist_in_set, rval, comp_ws;
-  int io_ws;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iii:ex_put_node_set_param",
-                        &exoid, &comp_ws, &io_ws, &node_set_id,
-                        &num_nodes_in_set, &num_dist_in_set)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_put_node_set_param(exoid,node_set_id,num_nodes_in_set,
-                               num_dist_in_set);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_node_set_param(PyObject *self, PyObject *args) {
+//  int exoid, node_set_id, num_nodes_in_set, num_dist_in_set, rval, comp_ws;
+//  int io_ws;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iii:ex_put_node_set_param",
+//                        &exoid, &comp_ws, &io_ws, &node_set_id,
+//                        &num_nodes_in_set, &num_dist_in_set)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_put_node_set_param(exoid,node_set_id,num_nodes_in_set,
+//                               num_dist_in_set);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_node_set
 //
-static PyObject *ex2lib_ex_get_node_set(PyObject *self, PyObject *args) {
-  int exoid, node_set_id, rval, comp_ws, io_ws, num_nodes_in_set;
-  npy_intp npy_num_nodes_in_set;
-  int num_dist_in_set;
-  PyArrayObject *nodes;
-  int *ptr_nodes;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_node_set",
-                        &exoid, &comp_ws, &io_ws, &node_set_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_node_set_param(exoid,node_set_id,&num_nodes_in_set,
-                               &num_dist_in_set);
-
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  npy_num_nodes_in_set = num_nodes_in_set;
-
-  nodes = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_nodes_in_set,PyArray_INT,
-                                         PyArray_CORDER);
-  if ( nodes == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_nodes = (int *)PyArray_DATA(nodes);
-
-  rval = ex_get_node_set(exoid,node_set_id,ptr_nodes);
-  if ( rval < 0 ) {
-    cleanup_po(1,nodes);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(nodes);
-}
+//static PyObject *ex2lib_ex_get_node_set(PyObject *self, PyObject *args) {
+//  int exoid, node_set_id, rval, comp_ws, io_ws, num_nodes_in_set;
+//  npy_intp npy_num_nodes_in_set;
+//  int num_dist_in_set;
+//  PyArrayObject *nodes;
+//  int *ptr_nodes;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_node_set",
+//                        &exoid, &comp_ws, &io_ws, &node_set_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_node_set_param(exoid,node_set_id,&num_nodes_in_set,
+//                               &num_dist_in_set);
+//
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  npy_num_nodes_in_set = num_nodes_in_set;
+//
+//  nodes = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_nodes_in_set,PyArray_INT,
+//                                         PyArray_CORDER);
+//  if ( nodes == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_nodes = (int *)PyArray_DATA(nodes);
+//
+//  rval = ex_get_node_set(exoid,node_set_id,ptr_nodes);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,nodes);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(nodes);
+//}
 
 
 //***************************************************************
 // ex_put_node_set
 //
-static PyObject *ex2lib_ex_put_node_set(PyObject *self, PyObject *args) {
-  int exoid, node_set_id, rval, comp_ws, io_ws;
-  PyObject *onodes;
-  PyArrayObject *nodes;
-  int *ptr_nodes;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iO:ex_put_node_set",
-                        &exoid, &comp_ws, &io_ws, &node_set_id, &onodes)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  nodes = (PyArrayObject *)intarray(onodes,1,1);
-  if ( nodes == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_nodes = (int *)PyArray_DATA(nodes);
-
-  rval = ex_put_node_set(exoid,node_set_id,ptr_nodes);
-
-  cleanup_po(1,nodes);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_node_set(PyObject *self, PyObject *args) {
+//  int exoid, node_set_id, rval, comp_ws, io_ws;
+//  PyObject *onodes;
+//  PyArrayObject *nodes;
+//  int *ptr_nodes;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iO:ex_put_node_set",
+//                        &exoid, &comp_ws, &io_ws, &node_set_id, &onodes)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  nodes = (PyArrayObject *)intarray(onodes,1,1);
+//  if ( nodes == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_nodes = (int *)PyArray_DATA(nodes);
+//
+//  rval = ex_put_node_set(exoid,node_set_id,ptr_nodes);
+//
+//  cleanup_po(1,nodes);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_node_set_dist_fact
 //
-static PyObject *ex2lib_ex_get_node_set_dist_fact(PyObject *self, PyObject *args) {
-  int exoid, node_set_id, rval, comp_ws, io_ws, num_nodes_in_set;
-  int num_dist_in_set, fdtype;
-  npy_intp npy_num_dist_in_set;
-  PyArrayObject *df;
-  void *ptr_df;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_node_set_dist_fact",
-                        &exoid, &comp_ws, &io_ws, &node_set_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_node_set_param(exoid,node_set_id,&num_nodes_in_set,
-                               &num_dist_in_set);
-
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  npy_num_dist_in_set = num_dist_in_set;
-
-  df = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_dist_in_set,fdtype,
-                                      PyArray_CORDER);
-  if ( df == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_df = (void *)PyArray_DATA(df);
-
-  rval = ex_get_node_set_dist_fact(exoid,node_set_id,ptr_df);
-  if ( rval < 0 ) {
-    cleanup_po(1,df);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(df);
-}
+//static PyObject *ex2lib_ex_get_node_set_dist_fact(PyObject *self, PyObject *args) {
+//  int exoid, node_set_id, rval, comp_ws, io_ws, num_nodes_in_set;
+//  int num_dist_in_set, fdtype;
+//  npy_intp npy_num_dist_in_set;
+//  PyArrayObject *df;
+//  void *ptr_df;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_node_set_dist_fact",
+//                        &exoid, &comp_ws, &io_ws, &node_set_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_node_set_param(exoid,node_set_id,&num_nodes_in_set,
+//                               &num_dist_in_set);
+//
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  npy_num_dist_in_set = num_dist_in_set;
+//
+//  df = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_dist_in_set,fdtype,
+//                                      PyArray_CORDER);
+//  if ( df == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_df = (void *)PyArray_DATA(df);
+//
+//  rval = ex_get_node_set_dist_fact(exoid,node_set_id,ptr_df);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,df);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(df);
+//}
 
 
 //***************************************************************
 // ex_put_node_set_dist_fact
 //
-static PyObject *ex2lib_ex_put_node_set_dist_fact(PyObject *self, PyObject *args) {
-  int exoid, node_set_id, rval, comp_ws, io_ws, fdtype;
-  PyObject *odf;
-  PyArrayObject *df;
-  void *ptr_df;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iO:ex_put_node_set_dist_fact",
-                        &exoid, &comp_ws, &io_ws, &node_set_id, &odf)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  df = (PyArrayObject *)fparray(odf,fdtype,1,1);
-  if ( df == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_df = (void *)PyArray_DATA(df);
-
-  rval = ex_put_node_set_dist_fact(exoid,node_set_id,ptr_df);
-
-  cleanup_po(1,df);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_node_set_dist_fact(PyObject *self, PyObject *args) {
+//  int exoid, node_set_id, rval, comp_ws, io_ws, fdtype;
+//  PyObject *odf;
+//  PyArrayObject *df;
+//  void *ptr_df;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iO:ex_put_node_set_dist_fact",
+//                        &exoid, &comp_ws, &io_ws, &node_set_id, &odf)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  df = (PyArrayObject *)fparray(odf,fdtype,1,1);
+//  if ( df == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_df = (void *)PyArray_DATA(df);
+//
+//  rval = ex_put_node_set_dist_fact(exoid,node_set_id,ptr_df);
+//
+//  cleanup_po(1,df);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_node_set_ids
 //
-static PyObject *ex2lib_ex_get_node_set_ids(PyObject *self, PyObject *args) {
-  int exoid, rval, num_node_sets, comp_ws, io_ws;
-  npy_intp npy_num_node_sets;
-  float fdmy;
-  char cdmy;
-  PyArrayObject *nsids;
-  int *ptr_nsids;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii):ex_get_node_set_ids",
-                        &exoid, &comp_ws, &io_ws)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_inquire(exoid,EX_INQ_NODE_SETS,&num_node_sets,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  npy_num_node_sets = num_node_sets;
-
-  nsids = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
-                                         PyArray_CORDER);
-
-  if ( nsids == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_nsids = (int *)PyArray_DATA(nsids);
-
-  rval = ex_get_node_set_ids(exoid,ptr_nsids);
-  if ( rval < 0 ) {
-    cleanup_po(1,nsids);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(nsids);
-}
+//static PyObject *ex2lib_ex_get_node_set_ids(PyObject *self, PyObject *args) {
+//  int exoid, rval, num_node_sets, comp_ws, io_ws;
+//  npy_intp npy_num_node_sets;
+//  float fdmy;
+//  char cdmy;
+//  PyArrayObject *nsids;
+//  int *ptr_nsids;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii):ex_get_node_set_ids",
+//                        &exoid, &comp_ws, &io_ws)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_NODE_SETS,&num_node_sets,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  npy_num_node_sets = num_node_sets;
+//
+//  nsids = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
+//                                         PyArray_CORDER);
+//
+//  if ( nsids == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_nsids = (int *)PyArray_DATA(nsids);
+//
+//  rval = ex_get_node_set_ids(exoid,ptr_nsids);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,nsids);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(nsids);
+//}
 
 
 //***************************************************************
 // ex_get_concat_node_sets
 //
-static PyObject *ex2lib_ex_get_concat_node_sets(PyObject *self, PyObject *args) {
-  int exoid, rval, comp_ws, io_ws, num_node_sets, num_ns_nodes, num_ns_df;
-  npy_intp  npy_num_node_sets, npy_num_ns_nodes, npy_num_ns_df;
-  int fdtype;
-  float fdmy;
-  char cdmy;
-  PyObject *rlst;
-  PyArrayObject *node_set_ids, *num_nodes_per_set, *num_dist_per_set;
-  PyArrayObject *node_sets_node_index, *node_sets_dist_index;
-  PyArrayObject *node_sets_node_list;
-  PyArrayObject *df;
-  int *ptr_node_set_ids, *ptr_num_nodes_per_set, *ptr_num_dist_per_set;
-  int *ptr_node_sets_node_index, *ptr_node_sets_dist_index;
-  int *ptr_node_sets_node_list;
-  void *ptr_df;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii):ex_get_concat_node_sets",
-                        &exoid, &comp_ws, &io_ws)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_inquire(exoid,EX_INQ_NODE_SETS,&num_node_sets,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  rval = ex_inquire(exoid,EX_INQ_NS_NODE_LEN,&num_ns_nodes,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  rval = ex_inquire(exoid,EX_INQ_NS_DF_LEN,&num_ns_df,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  npy_num_node_sets = num_node_sets;
-  npy_num_ns_nodes  = num_ns_nodes;
-  npy_num_ns_df     = num_ns_df;
-
-  node_set_ids =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
-                                   PyArray_CORDER);
-  num_nodes_per_set =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
-                                   PyArray_CORDER);
-  num_dist_per_set =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
-                                   PyArray_CORDER);
-  node_sets_node_index =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
-                                   PyArray_CORDER);
-  node_sets_dist_index =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
-                                   PyArray_CORDER);
-  node_sets_node_list =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ns_nodes,PyArray_INT,
-                                   PyArray_CORDER);
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  df = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ns_df,fdtype,PyArray_CORDER);
-
-  if ( (df == NULL) || (node_set_ids == NULL) || (num_nodes_per_set == NULL)
-       || (num_dist_per_set == NULL) || (node_sets_node_index == NULL)
-       || (node_sets_dist_index == NULL) || (node_sets_node_list == NULL) )
-    {
-      cleanup_po(7,df,node_set_ids,num_nodes_per_set,num_dist_per_set,
-                 node_sets_node_index,node_sets_dist_index,node_sets_node_list);
-      return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-    }
-
-  ptr_df = (void *)PyArray_DATA(df);
-  ptr_node_set_ids = (int *)PyArray_DATA(node_set_ids);
-  ptr_num_nodes_per_set = (int *)PyArray_DATA(num_nodes_per_set);
-  ptr_num_dist_per_set = (int *)PyArray_DATA(num_dist_per_set);
-  ptr_node_sets_node_index = (int *)PyArray_DATA(node_sets_node_index);
-  ptr_node_sets_dist_index = (int *)PyArray_DATA(node_sets_dist_index);
-  ptr_node_sets_node_list = (int *)PyArray_DATA(node_sets_node_list);
-
-  rval = ex_get_concat_node_sets(exoid,
-                                 ptr_node_set_ids,
-                                 ptr_num_nodes_per_set,
-                                 ptr_num_dist_per_set,
-                                 ptr_node_sets_node_index,
-                                 ptr_node_sets_dist_index,
-                                 ptr_node_sets_node_list,
-                                 ptr_df);
-
-  if ( rval < 0 ) {
-    cleanup_po(7,df,node_set_ids,num_nodes_per_set,num_dist_per_set,
-               node_sets_node_index,node_sets_dist_index,node_sets_node_list);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  rlst = PyList_New(7);
-
-  PyList_SetItem(rlst,0,PyArray_Return(node_set_ids));
-  PyList_SetItem(rlst,1,PyArray_Return(num_nodes_per_set));
-  PyList_SetItem(rlst,2,PyArray_Return(num_dist_per_set));
-  PyList_SetItem(rlst,3,PyArray_Return(node_sets_node_index));
-  PyList_SetItem(rlst,4,PyArray_Return(node_sets_dist_index));
-  PyList_SetItem(rlst,5,PyArray_Return(node_sets_node_list));
-  PyList_SetItem(rlst,6,PyArray_Return(df));
-
-  return rlst;
-}
+//static PyObject *ex2lib_ex_get_concat_node_sets(PyObject *self, PyObject *args) {
+//  int exoid, rval, comp_ws, io_ws, num_node_sets, num_ns_nodes, num_ns_df;
+//  npy_intp  npy_num_node_sets, npy_num_ns_nodes, npy_num_ns_df;
+//  int fdtype;
+//  float fdmy;
+//  char cdmy;
+//  PyObject *rlst;
+//  PyArrayObject *node_set_ids, *num_nodes_per_set, *num_dist_per_set;
+//  PyArrayObject *node_sets_node_index, *node_sets_dist_index;
+//  PyArrayObject *node_sets_node_list;
+//  PyArrayObject *df;
+//  int *ptr_node_set_ids, *ptr_num_nodes_per_set, *ptr_num_dist_per_set;
+//  int *ptr_node_sets_node_index, *ptr_node_sets_dist_index;
+//  int *ptr_node_sets_node_list;
+//  void *ptr_df;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii):ex_get_concat_node_sets",
+//                        &exoid, &comp_ws, &io_ws)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_NODE_SETS,&num_node_sets,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_NS_NODE_LEN,&num_ns_nodes,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_NS_DF_LEN,&num_ns_df,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  npy_num_node_sets = num_node_sets;
+//  npy_num_ns_nodes  = num_ns_nodes;
+//  npy_num_ns_df     = num_ns_df;
+//
+//  node_set_ids =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
+//                                   PyArray_CORDER);
+//  num_nodes_per_set =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
+//                                   PyArray_CORDER);
+//  num_dist_per_set =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
+//                                   PyArray_CORDER);
+//  node_sets_node_index =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
+//                                   PyArray_CORDER);
+//  node_sets_dist_index =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_node_sets,PyArray_INT,
+//                                   PyArray_CORDER);
+//  node_sets_node_list =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ns_nodes,PyArray_INT,
+//                                   PyArray_CORDER);
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  df = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ns_df,fdtype,PyArray_CORDER);
+//
+//  if ( (df == NULL) || (node_set_ids == NULL) || (num_nodes_per_set == NULL)
+//       || (num_dist_per_set == NULL) || (node_sets_node_index == NULL)
+//       || (node_sets_dist_index == NULL) || (node_sets_node_list == NULL) )
+//    {
+//      cleanup_po(7,df,node_set_ids,num_nodes_per_set,num_dist_per_set,
+//                 node_sets_node_index,node_sets_dist_index,node_sets_node_list);
+//      return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//    }
+//
+//  ptr_df = (void *)PyArray_DATA(df);
+//  ptr_node_set_ids = (int *)PyArray_DATA(node_set_ids);
+//  ptr_num_nodes_per_set = (int *)PyArray_DATA(num_nodes_per_set);
+//  ptr_num_dist_per_set = (int *)PyArray_DATA(num_dist_per_set);
+//  ptr_node_sets_node_index = (int *)PyArray_DATA(node_sets_node_index);
+//  ptr_node_sets_dist_index = (int *)PyArray_DATA(node_sets_dist_index);
+//  ptr_node_sets_node_list = (int *)PyArray_DATA(node_sets_node_list);
+//
+//  rval = ex_get_concat_node_sets(exoid,
+//                                 ptr_node_set_ids,
+//                                 ptr_num_nodes_per_set,
+//                                 ptr_num_dist_per_set,
+//                                 ptr_node_sets_node_index,
+//                                 ptr_node_sets_dist_index,
+//                                 ptr_node_sets_node_list,
+//                                 ptr_df);
+//
+//  if ( rval < 0 ) {
+//    cleanup_po(7,df,node_set_ids,num_nodes_per_set,num_dist_per_set,
+//               node_sets_node_index,node_sets_dist_index,node_sets_node_list);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  rlst = PyList_New(7);
+//
+//  PyList_SetItem(rlst,0,PyArray_Return(node_set_ids));
+//  PyList_SetItem(rlst,1,PyArray_Return(num_nodes_per_set));
+//  PyList_SetItem(rlst,2,PyArray_Return(num_dist_per_set));
+//  PyList_SetItem(rlst,3,PyArray_Return(node_sets_node_index));
+//  PyList_SetItem(rlst,4,PyArray_Return(node_sets_dist_index));
+//  PyList_SetItem(rlst,5,PyArray_Return(node_sets_node_list));
+//  PyList_SetItem(rlst,6,PyArray_Return(df));
+//
+//  return rlst;
+//}
 
 
 //***************************************************************
 // ex_put_concat_node_sets
 //
-static PyObject *ex2lib_ex_put_concat_node_sets(PyObject *self, PyObject *args) {
-  int exoid, rval, comp_ws, io_ws, fdtype;
-  PyObject *onode_set_ids, *onum_nodes_per_set, *onum_dist_per_set;
-  PyObject *onode_sets_node_index, *onode_sets_dist_index;
-  PyObject *onode_sets_node_list, *odf;
-  PyArrayObject *node_set_ids, *num_nodes_per_set, *num_dist_per_set;
-  PyArrayObject *node_sets_node_index, *node_sets_dist_index;
-  PyArrayObject *node_sets_node_list;
-  PyArrayObject *df;
-  int *ptr_node_set_ids, *ptr_num_nodes_per_set, *ptr_num_dist_per_set;
-  int *ptr_node_sets_node_index, *ptr_node_sets_dist_index;
-  int *ptr_node_sets_node_list;
-  void *ptr_df;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)OOOOOOO:ex_put_concat_node_sets",
-                        &exoid, &comp_ws, &io_ws, &onode_set_ids,
-                        &onum_nodes_per_set, &onum_dist_per_set,
-                        &onode_sets_node_index, &onode_sets_dist_index,
-                        &onode_sets_node_list, &odf)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  node_set_ids         = (PyArrayObject *)intarray(onode_set_ids,1,1);
-  num_nodes_per_set    = (PyArrayObject *)intarray(onum_nodes_per_set,1,1);
-  num_dist_per_set     = (PyArrayObject *)intarray(onum_dist_per_set,1,1);
-  node_sets_node_index = (PyArrayObject *)intarray(onode_sets_node_index,1,1);
-  node_sets_dist_index = (PyArrayObject *)intarray(onode_sets_dist_index,1,1);
-  node_sets_node_list  = (PyArrayObject *)intarray(onode_sets_node_list,1,1);
-
-  df = (PyArrayObject *)fparray(odf,fdtype,1,1);
-
-  if ( (df == NULL) || (node_set_ids == NULL) || (num_nodes_per_set == NULL)
-       || (num_dist_per_set == NULL) || (node_sets_node_index == NULL)
-       || (node_sets_dist_index == NULL) || (node_sets_node_list == NULL) )
-    {
-      cleanup_po(7,df,node_set_ids,num_nodes_per_set,num_dist_per_set,
-                 node_sets_node_index,node_sets_dist_index,node_sets_node_list);
-      return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-    }
-
-  ptr_df = (void *)PyArray_DATA(df);
-  ptr_node_set_ids = (int *)PyArray_DATA(node_set_ids);
-  ptr_num_nodes_per_set = (int *)PyArray_DATA(num_nodes_per_set);
-  ptr_num_dist_per_set = (int *)PyArray_DATA(num_dist_per_set);
-  ptr_node_sets_node_index = (int *)PyArray_DATA(node_sets_node_index);
-  ptr_node_sets_dist_index = (int *)PyArray_DATA(node_sets_dist_index);
-  ptr_node_sets_node_list = (int *)PyArray_DATA(node_sets_node_list);
-
-  rval = ex_put_concat_node_sets(exoid,
-                                 ptr_node_set_ids,
-                                 ptr_num_nodes_per_set,
-                                 ptr_num_dist_per_set,
-                                 ptr_node_sets_node_index,
-                                 ptr_node_sets_dist_index,
-                                 ptr_node_sets_node_list,
-                                 ptr_df);
-
-  cleanup_po(7,df,node_set_ids,num_nodes_per_set,num_dist_per_set,
-             node_sets_node_index,node_sets_dist_index,node_sets_node_list);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_concat_node_sets(PyObject *self, PyObject *args) {
+//  int exoid, rval, comp_ws, io_ws, fdtype;
+//  PyObject *onode_set_ids, *onum_nodes_per_set, *onum_dist_per_set;
+//  PyObject *onode_sets_node_index, *onode_sets_dist_index;
+//  PyObject *onode_sets_node_list, *odf;
+//  PyArrayObject *node_set_ids, *num_nodes_per_set, *num_dist_per_set;
+//  PyArrayObject *node_sets_node_index, *node_sets_dist_index;
+//  PyArrayObject *node_sets_node_list;
+//  PyArrayObject *df;
+//  int *ptr_node_set_ids, *ptr_num_nodes_per_set, *ptr_num_dist_per_set;
+//  int *ptr_node_sets_node_index, *ptr_node_sets_dist_index;
+//  int *ptr_node_sets_node_list;
+//  void *ptr_df;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)OOOOOOO:ex_put_concat_node_sets",
+//                        &exoid, &comp_ws, &io_ws, &onode_set_ids,
+//                        &onum_nodes_per_set, &onum_dist_per_set,
+//                        &onode_sets_node_index, &onode_sets_dist_index,
+//                        &onode_sets_node_list, &odf)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  node_set_ids         = (PyArrayObject *)intarray(onode_set_ids,1,1);
+//  num_nodes_per_set    = (PyArrayObject *)intarray(onum_nodes_per_set,1,1);
+//  num_dist_per_set     = (PyArrayObject *)intarray(onum_dist_per_set,1,1);
+//  node_sets_node_index = (PyArrayObject *)intarray(onode_sets_node_index,1,1);
+//  node_sets_dist_index = (PyArrayObject *)intarray(onode_sets_dist_index,1,1);
+//  node_sets_node_list  = (PyArrayObject *)intarray(onode_sets_node_list,1,1);
+//
+//  df = (PyArrayObject *)fparray(odf,fdtype,1,1);
+//
+//  if ( (df == NULL) || (node_set_ids == NULL) || (num_nodes_per_set == NULL)
+//       || (num_dist_per_set == NULL) || (node_sets_node_index == NULL)
+//       || (node_sets_dist_index == NULL) || (node_sets_node_list == NULL) )
+//    {
+//      cleanup_po(7,df,node_set_ids,num_nodes_per_set,num_dist_per_set,
+//                 node_sets_node_index,node_sets_dist_index,node_sets_node_list);
+//      return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//    }
+//
+//  ptr_df = (void *)PyArray_DATA(df);
+//  ptr_node_set_ids = (int *)PyArray_DATA(node_set_ids);
+//  ptr_num_nodes_per_set = (int *)PyArray_DATA(num_nodes_per_set);
+//  ptr_num_dist_per_set = (int *)PyArray_DATA(num_dist_per_set);
+//  ptr_node_sets_node_index = (int *)PyArray_DATA(node_sets_node_index);
+//  ptr_node_sets_dist_index = (int *)PyArray_DATA(node_sets_dist_index);
+//  ptr_node_sets_node_list = (int *)PyArray_DATA(node_sets_node_list);
+//
+//  rval = ex_put_concat_node_sets(exoid,
+//                                 ptr_node_set_ids,
+//                                 ptr_num_nodes_per_set,
+//                                 ptr_num_dist_per_set,
+//                                 ptr_node_sets_node_index,
+//                                 ptr_node_sets_dist_index,
+//                                 ptr_node_sets_node_list,
+//                                 ptr_df);
+//
+//  cleanup_po(7,df,node_set_ids,num_nodes_per_set,num_dist_per_set,
+//             node_sets_node_index,node_sets_dist_index,node_sets_node_list);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_side_set_param
 //
-static PyObject *ex2lib_ex_get_side_set_param(PyObject *self, PyObject *args) {
-  int exoid, side_set_id, num_side_in_set, num_dist_fact_in_set, rval;
-  int comp_ws, io_ws;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_side_set_param",
-                        &exoid, &comp_ws, &io_ws, &side_set_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_side_set_param(exoid,side_set_id,&num_side_in_set,
-                               &num_dist_fact_in_set);
-
-  if ( rval != 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("ii",num_side_in_set,num_dist_fact_in_set);
-}
+//static PyObject *ex2lib_ex_get_side_set_param(PyObject *self, PyObject *args) {
+//  int exoid, side_set_id, num_side_in_set, num_dist_fact_in_set, rval;
+//  int comp_ws, io_ws;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_side_set_param",
+//                        &exoid, &comp_ws, &io_ws, &side_set_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_side_set_param(exoid,side_set_id,&num_side_in_set,
+//                               &num_dist_fact_in_set);
+//
+//  if ( rval != 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("ii",num_side_in_set,num_dist_fact_in_set);
+//}
 
 
 //***************************************************************
 // ex_put_side_set_param
 //
-static PyObject *ex2lib_ex_put_side_set_param(PyObject *self, PyObject *args) {
-  int exoid, side_set_id, num_side_in_set, num_dist_fact_in_set, rval;
-  int comp_ws, io_ws;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iii:ex_put_side_set_param",
-                        &exoid, &comp_ws, &io_ws, &side_set_id,
-                        &num_side_in_set, &num_dist_fact_in_set)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_put_side_set_param(exoid,side_set_id,num_side_in_set,
-                               num_dist_fact_in_set);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_side_set_param(PyObject *self, PyObject *args) {
+//  int exoid, side_set_id, num_side_in_set, num_dist_fact_in_set, rval;
+//  int comp_ws, io_ws;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iii:ex_put_side_set_param",
+//                        &exoid, &comp_ws, &io_ws, &side_set_id,
+//                        &num_side_in_set, &num_dist_fact_in_set)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_put_side_set_param(exoid,side_set_id,num_side_in_set,
+//                               num_dist_fact_in_set);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_side_set
 //
-static PyObject *ex2lib_ex_get_side_set(PyObject *self, PyObject *args) {
-  int exoid, side_set_id, rval, comp_ws, io_ws, num_side_in_set;
-  npy_intp npy_num_side_in_set;
-  int num_dist_fact_in_set;
-  PyObject *rlst;
-  PyArrayObject *side_set_elem_list, *side_set_side_list;
-  int *ptr_side_set_elem_list, *ptr_side_set_side_list;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_side_set",
-                        &exoid, &comp_ws, &io_ws, &side_set_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_side_set_param(exoid,side_set_id,&num_side_in_set,
-                               &num_dist_fact_in_set);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  npy_num_side_in_set = num_side_in_set;
-
-  side_set_elem_list =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_side_in_set,PyArray_INT,
-                                   PyArray_CORDER);
-  side_set_side_list =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_side_in_set,PyArray_INT,
-                                   PyArray_CORDER);
-
-  if ( (side_set_elem_list == NULL) || (side_set_side_list == NULL) ) {
-    cleanup_po(2,side_set_elem_list,side_set_side_list);
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-  }
-
-  ptr_side_set_elem_list = (int *)PyArray_DATA(side_set_elem_list);
-  ptr_side_set_side_list = (int *)PyArray_DATA(side_set_side_list);
-
-  rval = ex_get_side_set(exoid,side_set_id,ptr_side_set_elem_list,
-                         ptr_side_set_side_list);
-
-  if ( rval < 0 ) {
-    cleanup_po(2,side_set_elem_list,side_set_side_list);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  rlst = PyList_New(2);
-  PyList_SetItem(rlst,0,PyArray_Return(side_set_elem_list));
-  PyList_SetItem(rlst,1,PyArray_Return(side_set_side_list));
-
-  return rlst;
-}
+//static PyObject *ex2lib_ex_get_side_set(PyObject *self, PyObject *args) {
+//  int exoid, side_set_id, rval, comp_ws, io_ws, num_side_in_set;
+//  npy_intp npy_num_side_in_set;
+//  int num_dist_fact_in_set;
+//  PyObject *rlst;
+//  PyArrayObject *side_set_elem_list, *side_set_side_list;
+//  int *ptr_side_set_elem_list, *ptr_side_set_side_list;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_side_set",
+//                        &exoid, &comp_ws, &io_ws, &side_set_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_side_set_param(exoid,side_set_id,&num_side_in_set,
+//                               &num_dist_fact_in_set);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  npy_num_side_in_set = num_side_in_set;
+//
+//  side_set_elem_list =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_side_in_set,PyArray_INT,
+//                                   PyArray_CORDER);
+//  side_set_side_list =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_side_in_set,PyArray_INT,
+//                                   PyArray_CORDER);
+//
+//  if ( (side_set_elem_list == NULL) || (side_set_side_list == NULL) ) {
+//    cleanup_po(2,side_set_elem_list,side_set_side_list);
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//  }
+//
+//  ptr_side_set_elem_list = (int *)PyArray_DATA(side_set_elem_list);
+//  ptr_side_set_side_list = (int *)PyArray_DATA(side_set_side_list);
+//
+//  rval = ex_get_side_set(exoid,side_set_id,ptr_side_set_elem_list,
+//                         ptr_side_set_side_list);
+//
+//  if ( rval < 0 ) {
+//    cleanup_po(2,side_set_elem_list,side_set_side_list);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  rlst = PyList_New(2);
+//  PyList_SetItem(rlst,0,PyArray_Return(side_set_elem_list));
+//  PyList_SetItem(rlst,1,PyArray_Return(side_set_side_list));
+//
+//  return rlst;
+//}
 
 
 //***************************************************************
 // ex_put_side_set
 //
-static PyObject *ex2lib_ex_put_side_set(PyObject *self, PyObject *args) {
-  int exoid, side_set_id, rval, comp_ws, io_ws;
-  PyObject *oside_set_elem_list, *oside_set_side_list;
-  PyArrayObject *side_set_elem_list, *side_set_side_list;
-  int *ptr_side_set_elem_list, *ptr_side_set_side_list;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iOO:ex_put_side_set",
-                        &exoid, &comp_ws, &io_ws, &side_set_id,
-                        &oside_set_elem_list, &oside_set_side_list)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  side_set_elem_list = (PyArrayObject *)intarray(oside_set_elem_list,1,1);
-  side_set_side_list = (PyArrayObject *)intarray(oside_set_side_list,1,1);
-
-  if ( (side_set_elem_list == NULL) || (side_set_side_list == NULL) ) {
-    cleanup_po(2,side_set_elem_list,side_set_side_list);
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-  }
-
-  ptr_side_set_elem_list = (int *)PyArray_DATA(side_set_elem_list);
-  ptr_side_set_side_list = (int *)PyArray_DATA(side_set_side_list);
-
-  rval = ex_put_side_set(exoid,side_set_id,ptr_side_set_elem_list,
-                         ptr_side_set_side_list);
-
-  cleanup_po(2,side_set_elem_list,side_set_side_list);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_side_set(PyObject *self, PyObject *args) {
+//  int exoid, side_set_id, rval, comp_ws, io_ws;
+//  PyObject *oside_set_elem_list, *oside_set_side_list;
+//  PyArrayObject *side_set_elem_list, *side_set_side_list;
+//  int *ptr_side_set_elem_list, *ptr_side_set_side_list;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iOO:ex_put_side_set",
+//                        &exoid, &comp_ws, &io_ws, &side_set_id,
+//                        &oside_set_elem_list, &oside_set_side_list)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  side_set_elem_list = (PyArrayObject *)intarray(oside_set_elem_list,1,1);
+//  side_set_side_list = (PyArrayObject *)intarray(oside_set_side_list,1,1);
+//
+//  if ( (side_set_elem_list == NULL) || (side_set_side_list == NULL) ) {
+//    cleanup_po(2,side_set_elem_list,side_set_side_list);
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//  }
+//
+//  ptr_side_set_elem_list = (int *)PyArray_DATA(side_set_elem_list);
+//  ptr_side_set_side_list = (int *)PyArray_DATA(side_set_side_list);
+//
+//  rval = ex_put_side_set(exoid,side_set_id,ptr_side_set_elem_list,
+//                         ptr_side_set_side_list);
+//
+//  cleanup_po(2,side_set_elem_list,side_set_side_list);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_side_set_dist_fact
 //
-static PyObject *ex2lib_ex_get_side_set_dist_fact(PyObject *self, PyObject *args) {
-  int exoid, side_set_id, rval, comp_ws, io_ws, num_side_in_set;
-  int num_dist_fact_in_set, fdtype;
-  npy_intp npy_num_dist_fact_in_set;
-  PyArrayObject *df;
-  void *ptr_df;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_side_set_dist_fact",
-                        &exoid, &comp_ws, &io_ws, &side_set_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_side_set_param(exoid,side_set_id,&num_side_in_set,
-                               &num_dist_fact_in_set);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  npy_num_dist_fact_in_set = num_dist_fact_in_set;
-
-  df = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_dist_fact_in_set,fdtype,
-                                      PyArray_CORDER);
-  if ( df == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_df = (void *)PyArray_DATA(df);
-
-  rval = ex_get_side_set_dist_fact(exoid,side_set_id,ptr_df);
-
-  if ( rval < 0 ) {
-    cleanup_po(1,df);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(df);
-}
+//static PyObject *ex2lib_ex_get_side_set_dist_fact(PyObject *self, PyObject *args) {
+//  int exoid, side_set_id, rval, comp_ws, io_ws, num_side_in_set;
+//  int num_dist_fact_in_set, fdtype;
+//  npy_intp npy_num_dist_fact_in_set;
+//  PyArrayObject *df;
+//  void *ptr_df;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex_get_side_set_dist_fact",
+//                        &exoid, &comp_ws, &io_ws, &side_set_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_side_set_param(exoid,side_set_id,&num_side_in_set,
+//                               &num_dist_fact_in_set);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  npy_num_dist_fact_in_set = num_dist_fact_in_set;
+//
+//  df = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_dist_fact_in_set,fdtype,
+//                                      PyArray_CORDER);
+//  if ( df == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_df = (void *)PyArray_DATA(df);
+//
+//  rval = ex_get_side_set_dist_fact(exoid,side_set_id,ptr_df);
+//
+//  if ( rval < 0 ) {
+//    cleanup_po(1,df);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(df);
+//}
 
 
 //***************************************************************
 // ex_put_side_set_dist_fact
 //
-static PyObject *ex2lib_ex_put_side_set_dist_fact(PyObject *self, PyObject *args) {
-  int exoid, side_set_id, rval, comp_ws, io_ws, fdtype;
-  PyObject *odf;
-  PyArrayObject *df;
-  void *ptr_df;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iO:ex_put_side_set_dist_fact",
-                        &exoid, &comp_ws, &io_ws, &side_set_id, &odf)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  df = (PyArrayObject *)fparray(odf,fdtype,1,1);
-  if ( df == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_df = (void *)PyArray_DATA(df);
-
-  rval = ex_put_side_set_dist_fact(exoid,side_set_id,ptr_df);
-
-  cleanup_po(1,df);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_side_set_dist_fact(PyObject *self, PyObject *args) {
+//  int exoid, side_set_id, rval, comp_ws, io_ws, fdtype;
+//  PyObject *odf;
+//  PyArrayObject *df;
+//  void *ptr_df;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iO:ex_put_side_set_dist_fact",
+//                        &exoid, &comp_ws, &io_ws, &side_set_id, &odf)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  df = (PyArrayObject *)fparray(odf,fdtype,1,1);
+//  if ( df == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_df = (void *)PyArray_DATA(df);
+//
+//  rval = ex_put_side_set_dist_fact(exoid,side_set_id,ptr_df);
+//
+//  cleanup_po(1,df);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_concat_side_sets
 //
-static PyObject *ex2lib_ex_get_concat_side_sets(PyObject *self, PyObject *args) {
-  int exoid, rval, comp_ws, io_ws, num_ss, num_ss_elem, num_ss_df, fdtype;
-  npy_intp npy_num_ss, npy_num_ss_elem, npy_num_ss_df;
-  float fdmy;
-  char cdmy;
-  PyObject *rlst;
-  PyArrayObject *side_set_ids, *num_side_per_set, *num_dist_per_set;
-  PyArrayObject *side_sets_elem_index, *side_sets_dist_index;
-  PyArrayObject *side_sets_elem_list, *side_sets_side_list;
-  PyArrayObject *df;
-  int *ptr_side_set_ids, *ptr_num_side_per_set, *ptr_num_dist_per_set;
-  int *ptr_side_sets_elem_index, *ptr_side_sets_dist_index;
-  int *ptr_side_sets_elem_list, *ptr_side_sets_side_list;
-  void *ptr_df;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii):ex_get_concat_side_sets",
-                        &exoid, &comp_ws, &io_ws)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_inquire(exoid,EX_INQ_SIDE_SETS,&num_ss,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  rval = ex_inquire(exoid,EX_INQ_SS_ELEM_LEN,&num_ss_elem,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  rval = ex_inquire(exoid,EX_INQ_SS_DF_LEN,&num_ss_df,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  npy_num_ss      = num_ss;
-  npy_num_ss_elem = num_ss_elem;
-  npy_num_ss_df   = num_ss_df;
-
-  side_set_ids =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
-  num_side_per_set =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
-  num_dist_per_set =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
-  side_sets_elem_index =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
-  side_sets_dist_index =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
-  side_sets_elem_list =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss_elem,PyArray_INT,PyArray_CORDER);
-  side_sets_side_list =
-    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss_elem,PyArray_INT,PyArray_CORDER);
-
-  df = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss_df,fdtype,PyArray_CORDER);
-
-  if ( (df == NULL) || (side_set_ids == NULL) || (num_side_per_set == NULL)
-       || (num_dist_per_set == NULL) || (side_sets_elem_index == NULL)
-       || (side_sets_dist_index == NULL) || (side_sets_elem_list == NULL)
-       || (side_sets_side_list == NULL) )
-    {
-      cleanup_po(8,df,side_set_ids,num_side_per_set,num_dist_per_set,
-                 side_sets_elem_index,side_sets_dist_index,side_sets_elem_list,
-                 side_sets_side_list);
-      return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-    }
-
-  ptr_df = (void *)PyArray_DATA(df);
-  ptr_side_set_ids = (int *)PyArray_DATA(side_set_ids);
-  ptr_num_side_per_set = (int *)PyArray_DATA(num_side_per_set);
-  ptr_num_dist_per_set = (int *)PyArray_DATA(num_dist_per_set);
-  ptr_side_sets_elem_index = (int *)PyArray_DATA(side_sets_elem_index);
-  ptr_side_sets_dist_index = (int *)PyArray_DATA(side_sets_dist_index);
-  ptr_side_sets_elem_list = (int *)PyArray_DATA(side_sets_elem_list);
-  ptr_side_sets_side_list = (int *)PyArray_DATA(side_sets_side_list);
-
-  rval = ex_get_concat_side_sets(exoid,
-                                 ptr_side_set_ids,
-                                 ptr_num_side_per_set,
-                                 ptr_num_dist_per_set,
-                                 ptr_side_sets_elem_index,
-                                 ptr_side_sets_dist_index,
-                                 ptr_side_sets_elem_list,
-                                 ptr_side_sets_side_list,
-                                 ptr_df);
-
-  if ( rval < 0 ) {
-    cleanup_po(8,df,side_set_ids,num_side_per_set,num_dist_per_set,
-               side_sets_elem_index,side_sets_dist_index,side_sets_elem_list,
-               side_sets_side_list);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  rlst = PyList_New(8);
-
-  PyList_SetItem(rlst,0,PyArray_Return(side_set_ids));
-  PyList_SetItem(rlst,1,PyArray_Return(num_side_per_set));
-  PyList_SetItem(rlst,2,PyArray_Return(num_dist_per_set));
-  PyList_SetItem(rlst,3,PyArray_Return(side_sets_elem_index));
-  PyList_SetItem(rlst,4,PyArray_Return(side_sets_dist_index));
-  PyList_SetItem(rlst,5,PyArray_Return(side_sets_elem_list));
-  PyList_SetItem(rlst,6,PyArray_Return(side_sets_side_list));
-  PyList_SetItem(rlst,7,PyArray_Return(df));
-
-  return rlst;
-}
+//static PyObject *ex2lib_ex_get_concat_side_sets(PyObject *self, PyObject *args) {
+//  int exoid, rval, comp_ws, io_ws, num_ss, num_ss_elem, num_ss_df, fdtype;
+//  npy_intp npy_num_ss, npy_num_ss_elem, npy_num_ss_df;
+//  float fdmy;
+//  char cdmy;
+//  PyObject *rlst;
+//  PyArrayObject *side_set_ids, *num_side_per_set, *num_dist_per_set;
+//  PyArrayObject *side_sets_elem_index, *side_sets_dist_index;
+//  PyArrayObject *side_sets_elem_list, *side_sets_side_list;
+//  PyArrayObject *df;
+//  int *ptr_side_set_ids, *ptr_num_side_per_set, *ptr_num_dist_per_set;
+//  int *ptr_side_sets_elem_index, *ptr_side_sets_dist_index;
+//  int *ptr_side_sets_elem_list, *ptr_side_sets_side_list;
+//  void *ptr_df;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii):ex_get_concat_side_sets",
+//                        &exoid, &comp_ws, &io_ws)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_SIDE_SETS,&num_ss,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_SS_ELEM_LEN,&num_ss_elem,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_SS_DF_LEN,&num_ss_df,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  npy_num_ss      = num_ss;
+//  npy_num_ss_elem = num_ss_elem;
+//  npy_num_ss_df   = num_ss_df;
+//
+//  side_set_ids =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
+//  num_side_per_set =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
+//  num_dist_per_set =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
+//  side_sets_elem_index =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
+//  side_sets_dist_index =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss,PyArray_INT,PyArray_CORDER);
+//  side_sets_elem_list =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss_elem,PyArray_INT,PyArray_CORDER);
+//  side_sets_side_list =
+//    (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss_elem,PyArray_INT,PyArray_CORDER);
+//
+//  df = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_ss_df,fdtype,PyArray_CORDER);
+//
+//  if ( (df == NULL) || (side_set_ids == NULL) || (num_side_per_set == NULL)
+//       || (num_dist_per_set == NULL) || (side_sets_elem_index == NULL)
+//       || (side_sets_dist_index == NULL) || (side_sets_elem_list == NULL)
+//       || (side_sets_side_list == NULL) )
+//    {
+//      cleanup_po(8,df,side_set_ids,num_side_per_set,num_dist_per_set,
+//                 side_sets_elem_index,side_sets_dist_index,side_sets_elem_list,
+//                 side_sets_side_list);
+//      return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//    }
+//
+//  ptr_df = (void *)PyArray_DATA(df);
+//  ptr_side_set_ids = (int *)PyArray_DATA(side_set_ids);
+//  ptr_num_side_per_set = (int *)PyArray_DATA(num_side_per_set);
+//  ptr_num_dist_per_set = (int *)PyArray_DATA(num_dist_per_set);
+//  ptr_side_sets_elem_index = (int *)PyArray_DATA(side_sets_elem_index);
+//  ptr_side_sets_dist_index = (int *)PyArray_DATA(side_sets_dist_index);
+//  ptr_side_sets_elem_list = (int *)PyArray_DATA(side_sets_elem_list);
+//  ptr_side_sets_side_list = (int *)PyArray_DATA(side_sets_side_list);
+//
+//  rval = ex_get_concat_side_sets(exoid,
+//                                 ptr_side_set_ids,
+//                                 ptr_num_side_per_set,
+//                                 ptr_num_dist_per_set,
+//                                 ptr_side_sets_elem_index,
+//                                 ptr_side_sets_dist_index,
+//                                 ptr_side_sets_elem_list,
+//                                 ptr_side_sets_side_list,
+//                                 ptr_df);
+//
+//  if ( rval < 0 ) {
+//    cleanup_po(8,df,side_set_ids,num_side_per_set,num_dist_per_set,
+//               side_sets_elem_index,side_sets_dist_index,side_sets_elem_list,
+//               side_sets_side_list);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  rlst = PyList_New(8);
+//
+//  PyList_SetItem(rlst,0,PyArray_Return(side_set_ids));
+//  PyList_SetItem(rlst,1,PyArray_Return(num_side_per_set));
+//  PyList_SetItem(rlst,2,PyArray_Return(num_dist_per_set));
+//  PyList_SetItem(rlst,3,PyArray_Return(side_sets_elem_index));
+//  PyList_SetItem(rlst,4,PyArray_Return(side_sets_dist_index));
+//  PyList_SetItem(rlst,5,PyArray_Return(side_sets_elem_list));
+//  PyList_SetItem(rlst,6,PyArray_Return(side_sets_side_list));
+//  PyList_SetItem(rlst,7,PyArray_Return(df));
+//
+//  return rlst;
+//}
 
 
 //***************************************************************
 // ex_put_concat_side_sets
 //
-static PyObject *ex2lib_ex_put_concat_side_sets(PyObject *self, PyObject *args) {
-  int exoid, rval, comp_ws, io_ws, fdtype;
-  PyObject *oside_set_ids, *onum_side_per_set, *onum_dist_per_set;
-  PyObject *oside_sets_elem_index, *oside_sets_dist_index;
-  PyObject *oside_sets_elem_list, *oside_sets_side_list, *odf;
-  PyArrayObject *side_set_ids, *num_side_per_set, *num_dist_per_set;
-  PyArrayObject *side_sets_elem_index, *side_sets_dist_index;
-  PyArrayObject *side_sets_elem_list, *side_sets_side_list;
-  PyArrayObject *df;
-  int *ptr_side_set_ids, *ptr_num_side_per_set, *ptr_num_dist_per_set;
-  int *ptr_side_sets_elem_index, *ptr_side_sets_dist_index;
-  int *ptr_side_sets_elem_list, *ptr_side_sets_side_list;
-  void *ptr_df;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)OOOOOOO:ex_put_concat_side_sets",
-                        &exoid, &comp_ws, &io_ws, &oside_set_ids,
-                        &onum_side_per_set, &onum_dist_per_set,
-                        &oside_sets_elem_index, &oside_sets_dist_index,
-                        &oside_sets_elem_list, &oside_sets_side_list, &odf)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  side_set_ids         = (PyArrayObject *)intarray(oside_set_ids,1,1);
-  num_side_per_set     = (PyArrayObject *)intarray(onum_side_per_set,1,1);
-  num_dist_per_set     = (PyArrayObject *)intarray(onum_dist_per_set,1,1);
-  side_sets_elem_index = (PyArrayObject *)intarray(oside_sets_elem_index,1,1);
-  side_sets_dist_index = (PyArrayObject *)intarray(oside_sets_dist_index,1,1);
-  side_sets_elem_list  = (PyArrayObject *)intarray(oside_sets_elem_list,1,1);
-  side_sets_side_list  = (PyArrayObject *)intarray(oside_sets_side_list,1,1);
-
-  df = (PyArrayObject *)fparray(odf,fdtype,1,1);
-
-  if ( (df == NULL) || (side_set_ids == NULL) || (num_side_per_set == NULL)
-       || (num_dist_per_set == NULL) || (side_sets_elem_index == NULL)
-       || (side_sets_dist_index == NULL) || (side_sets_elem_list == NULL)
-       || (side_sets_side_list == NULL) )
-    {
-      cleanup_po(8,df,side_set_ids,num_side_per_set,num_dist_per_set,
-                 side_sets_elem_index,side_sets_dist_index,side_sets_elem_list,
-                 side_sets_side_list);
-      return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-    }
-
-  ptr_df = (void *)PyArray_DATA(df);
-  ptr_side_set_ids = (int *)PyArray_DATA(side_set_ids);
-  ptr_num_side_per_set = (int *)PyArray_DATA(num_side_per_set);
-  ptr_num_dist_per_set = (int *)PyArray_DATA(num_dist_per_set);
-  ptr_side_sets_elem_index = (int *)PyArray_DATA(side_sets_elem_index);
-  ptr_side_sets_dist_index = (int *)PyArray_DATA(side_sets_dist_index);
-  ptr_side_sets_elem_list = (int *)PyArray_DATA(side_sets_elem_list);
-  ptr_side_sets_side_list = (int *)PyArray_DATA(side_sets_side_list);
-
-  rval = ex_put_concat_side_sets(exoid,
-                                 ptr_side_set_ids,
-                                 ptr_num_side_per_set,
-                                 ptr_num_dist_per_set,
-                                 ptr_side_sets_elem_index,
-                                 ptr_side_sets_dist_index,
-                                 ptr_side_sets_elem_list,
-                                 ptr_side_sets_side_list,
-                                 ptr_df);
-
-  cleanup_po(8,df,side_set_ids,num_side_per_set,num_dist_per_set,
-             side_sets_elem_index,side_sets_dist_index,side_sets_elem_list,
-             side_sets_side_list);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_concat_side_sets(PyObject *self, PyObject *args) {
+//  int exoid, rval, comp_ws, io_ws, fdtype;
+//  PyObject *oside_set_ids, *onum_side_per_set, *onum_dist_per_set;
+//  PyObject *oside_sets_elem_index, *oside_sets_dist_index;
+//  PyObject *oside_sets_elem_list, *oside_sets_side_list, *odf;
+//  PyArrayObject *side_set_ids, *num_side_per_set, *num_dist_per_set;
+//  PyArrayObject *side_sets_elem_index, *side_sets_dist_index;
+//  PyArrayObject *side_sets_elem_list, *side_sets_side_list;
+//  PyArrayObject *df;
+//  int *ptr_side_set_ids, *ptr_num_side_per_set, *ptr_num_dist_per_set;
+//  int *ptr_side_sets_elem_index, *ptr_side_sets_dist_index;
+//  int *ptr_side_sets_elem_list, *ptr_side_sets_side_list;
+//  void *ptr_df;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)OOOOOOO:ex_put_concat_side_sets",
+//                        &exoid, &comp_ws, &io_ws, &oside_set_ids,
+//                        &onum_side_per_set, &onum_dist_per_set,
+//                        &oside_sets_elem_index, &oside_sets_dist_index,
+//                        &oside_sets_elem_list, &oside_sets_side_list, &odf)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  side_set_ids         = (PyArrayObject *)intarray(oside_set_ids,1,1);
+//  num_side_per_set     = (PyArrayObject *)intarray(onum_side_per_set,1,1);
+//  num_dist_per_set     = (PyArrayObject *)intarray(onum_dist_per_set,1,1);
+//  side_sets_elem_index = (PyArrayObject *)intarray(oside_sets_elem_index,1,1);
+//  side_sets_dist_index = (PyArrayObject *)intarray(oside_sets_dist_index,1,1);
+//  side_sets_elem_list  = (PyArrayObject *)intarray(oside_sets_elem_list,1,1);
+//  side_sets_side_list  = (PyArrayObject *)intarray(oside_sets_side_list,1,1);
+//
+//  df = (PyArrayObject *)fparray(odf,fdtype,1,1);
+//
+//  if ( (df == NULL) || (side_set_ids == NULL) || (num_side_per_set == NULL)
+//       || (num_dist_per_set == NULL) || (side_sets_elem_index == NULL)
+//       || (side_sets_dist_index == NULL) || (side_sets_elem_list == NULL)
+//       || (side_sets_side_list == NULL) )
+//    {
+//      cleanup_po(8,df,side_set_ids,num_side_per_set,num_dist_per_set,
+//                 side_sets_elem_index,side_sets_dist_index,side_sets_elem_list,
+//                 side_sets_side_list);
+//      return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//    }
+//
+//  ptr_df = (void *)PyArray_DATA(df);
+//  ptr_side_set_ids = (int *)PyArray_DATA(side_set_ids);
+//  ptr_num_side_per_set = (int *)PyArray_DATA(num_side_per_set);
+//  ptr_num_dist_per_set = (int *)PyArray_DATA(num_dist_per_set);
+//  ptr_side_sets_elem_index = (int *)PyArray_DATA(side_sets_elem_index);
+//  ptr_side_sets_dist_index = (int *)PyArray_DATA(side_sets_dist_index);
+//  ptr_side_sets_elem_list = (int *)PyArray_DATA(side_sets_elem_list);
+//  ptr_side_sets_side_list = (int *)PyArray_DATA(side_sets_side_list);
+//
+//  rval = ex_put_concat_side_sets(exoid,
+//                                 ptr_side_set_ids,
+//                                 ptr_num_side_per_set,
+//                                 ptr_num_dist_per_set,
+//                                 ptr_side_sets_elem_index,
+//                                 ptr_side_sets_dist_index,
+//                                 ptr_side_sets_elem_list,
+//                                 ptr_side_sets_side_list,
+//                                 ptr_df);
+//
+//  cleanup_po(8,df,side_set_ids,num_side_per_set,num_dist_per_set,
+//             side_sets_elem_index,side_sets_dist_index,side_sets_elem_list,
+//             side_sets_side_list);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
@@ -2125,134 +2125,134 @@ static PyObject *ex2lib_ex_put_prop_array(PyObject *self, PyObject *args) {
 //***************************************************************
 // ex_get_var_param
 //
-static PyObject *ex2lib_ex_get_var_param(PyObject *self, PyObject *args) {
-  int exoid, num_vars, rval, comp_ws, io_ws;
-  char *var_type;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)s:ex_get_var_param",
-                        &exoid, &comp_ws, &io_ws, &var_type)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_var_param(exoid,var_type,&num_vars);
-  if ( rval != 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",num_vars);
-}
+//static PyObject *ex2lib_ex_get_var_param(PyObject *self, PyObject *args) {
+//  int exoid, num_vars, rval, comp_ws, io_ws;
+//  char *var_type;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)s:ex_get_var_param",
+//                        &exoid, &comp_ws, &io_ws, &var_type)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_var_param(exoid,var_type,&num_vars);
+//  if ( rval != 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",num_vars);
+//}
 
 
 //***************************************************************
 // ex_put_var_param
 //
-static PyObject *ex2lib_ex_put_var_param(PyObject *self, PyObject *args) {
-  int exoid, num_vars, rval, comp_ws, io_ws;
-  char *var_type;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)si:ex_put_var_param",
-                        &exoid, &comp_ws, &io_ws, &var_type, &num_vars)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_put_var_param(exoid,var_type,num_vars);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_var_param(PyObject *self, PyObject *args) {
+//  int exoid, num_vars, rval, comp_ws, io_ws;
+//  char *var_type;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)si:ex_put_var_param",
+//                        &exoid, &comp_ws, &io_ws, &var_type, &num_vars)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_put_var_param(exoid,var_type,num_vars);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_var_names
 //
-static PyObject *ex2lib_ex_get_var_names(PyObject *self, PyObject *args) {
-  int i, exoid, num_vars, rval, comp_ws, io_ws;
-  char *var_type;
-  PyObject *oname;
-  char *names, **name;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)s:ex_get_var_names",
-                        &exoid, &comp_ws, &io_ws, &var_type)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_var_param(exoid,var_type,&num_vars);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  names = (char *)malloc(num_vars*(MAX_STR_LENGTH+1)*sizeof(char));
-  name  = (char **)malloc(num_vars*sizeof(char *));
-  if ( ( names == NULL ) || ( name == NULL ) ) {
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-  }
-
-  for ( i = 0; i < num_vars; i++ ) {
-      name[i] = names +i*(MAX_STR_LENGTH+1);
-  }
-
-  rval = ex_get_var_names(exoid,var_type,num_vars,name);
-  if ( rval < 0 ) {
-    free(name);
-    free(names);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  oname = PyList_New(num_vars);
-  for ( i = 0; i < num_vars; i++ )
-    PyList_SetItem(oname,i,Py_BuildValue("s",name[i]));
-
-  free(name);
-  free(names);
-  return oname;
-}
+//static PyObject *ex2lib_ex_get_var_names(PyObject *self, PyObject *args) {
+//  int i, exoid, num_vars, rval, comp_ws, io_ws;
+//  char *var_type;
+//  PyObject *oname;
+//  char *names, **name;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)s:ex_get_var_names",
+//                        &exoid, &comp_ws, &io_ws, &var_type)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_var_param(exoid,var_type,&num_vars);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  names = (char *)malloc(num_vars*(MAX_STR_LENGTH+1)*sizeof(char));
+//  name  = (char **)malloc(num_vars*sizeof(char *));
+//  if ( ( names == NULL ) || ( name == NULL ) ) {
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//  }
+//
+//  for ( i = 0; i < num_vars; i++ ) {
+//      name[i] = names +i*(MAX_STR_LENGTH+1);
+//  }
+//
+//  rval = ex_get_var_names(exoid,var_type,num_vars,name);
+//  if ( rval < 0 ) {
+//    free(name);
+//    free(names);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  oname = PyList_New(num_vars);
+//  for ( i = 0; i < num_vars; i++ )
+//    PyList_SetItem(oname,i,Py_BuildValue("s",name[i]));
+//
+//  free(name);
+//  free(names);
+//  return oname;
+//}
 
 
 //***************************************************************
 // ex_put_var_names
 //
-static PyObject *ex2lib_ex_put_var_names(PyObject *self, PyObject *args) {
-  int i, exoid, num_vars, rval, comp_ws, io_ws;
-  char *var_type;
-  PyObject *onames;
-  PyArrayObject *aonames;
-  PyObject **ptr_sobj;
-  char **names;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)siO:ex_put_var_names",
-                        &exoid, &comp_ws, &io_ws, &var_type, &num_vars, &onames)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  aonames = (PyArrayObject *)PyArray_ContiguousFromAny(onames,
-                                                       PyArray_OBJECT,1,1);
-  if ( aonames == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  names = (char **)malloc(num_vars*sizeof(char *));
-  if ( names == NULL ) {
-    cleanup_po(1,aonames);
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-  }
-
-  ptr_sobj = (PyObject **)PyArray_DATA(aonames);
-  for (i=0; i<num_vars; i++) {
-    names[i] = PyString_AsString( ptr_sobj[i] );
-  }
-
-  rval = ex_put_var_names(exoid,var_type,num_vars,names);
-
-  free(names);
-  cleanup_po(1,aonames);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
-
+//static PyObject *ex2lib_ex_put_var_names(PyObject *self, PyObject *args) {
+//  int i, exoid, num_vars, rval, comp_ws, io_ws;
+//  char *var_type;
+//  PyObject *onames;
+//  PyArrayObject *aonames;
+//  PyObject **ptr_sobj;
+//  char **names;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)siO:ex_put_var_names",
+//                        &exoid, &comp_ws, &io_ws, &var_type, &num_vars, &onames)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  aonames = (PyArrayObject *)PyArray_ContiguousFromAny(onames,
+//                                                       PyArray_OBJECT,1,1);
+//  if ( aonames == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  names = (char **)malloc(num_vars*sizeof(char *));
+//  if ( names == NULL ) {
+//    cleanup_po(1,aonames);
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//  }
+//
+//  ptr_sobj = (PyObject **)PyArray_DATA(aonames);
+//  for (i=0; i<num_vars; i++) {
+//    names[i] = PyString_AsString( ptr_sobj[i] );
+//  }
+//
+//  rval = ex_put_var_names(exoid,var_type,num_vars,names);
+//
+//  free(names);
+//  cleanup_po(1,aonames);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
+//
 
 //***************************************************************
 // ex_get_time
@@ -2312,245 +2312,245 @@ static PyObject *ex2lib_ex_put_time(PyObject *self, PyObject *args) {
 //***************************************************************
 // ex_get_elem_var_tab
 //
-static PyObject *ex2lib_ex_get_elem_var_tab(PyObject *self, PyObject *args) {
-  int exoid, num_elem_blk, num_elem_var, rval, comp_ws, io_ws;
-  npy_intp sz;
-  float fdmy;
-  char cdmy;
-  PyArrayObject *tab;
-  int *ptr_tab;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii):ex_get_elem_var_tab",
-                        &exoid, &comp_ws, &io_ws)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_var_param(exoid,"E", &num_elem_var);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  rval = ex_inquire(exoid,EX_INQ_ELEM_BLK,&num_elem_blk,&fdmy,&cdmy);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  sz = num_elem_blk*num_elem_var;
-
-  tab = (PyArrayObject *)PyArray_EMPTY(1,&sz,PyArray_INT,PyArray_CORDER);
-  if ( tab == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_tab = (int *)PyArray_DATA(tab);
-
-  rval = ex_get_elem_var_tab(exoid,num_elem_blk,num_elem_var,ptr_tab);
-
-  if ( rval < 0 ) {
-    cleanup_po(1,tab);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(tab);
-}
+//static PyObject *ex2lib_ex_get_elem_var_tab(PyObject *self, PyObject *args) {
+//  int exoid, num_elem_blk, num_elem_var, rval, comp_ws, io_ws;
+//  npy_intp sz;
+//  float fdmy;
+//  char cdmy;
+//  PyArrayObject *tab;
+//  int *ptr_tab;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii):ex_get_elem_var_tab",
+//                        &exoid, &comp_ws, &io_ws)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_var_param(exoid,"E", &num_elem_var);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  rval = ex_inquire(exoid,EX_INQ_ELEM_BLK,&num_elem_blk,&fdmy,&cdmy);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  sz = num_elem_blk*num_elem_var;
+//
+//  tab = (PyArrayObject *)PyArray_EMPTY(1,&sz,PyArray_INT,PyArray_CORDER);
+//  if ( tab == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_tab = (int *)PyArray_DATA(tab);
+//
+//  rval = ex_get_elem_var_tab(exoid,num_elem_blk,num_elem_var,ptr_tab);
+//
+//  if ( rval < 0 ) {
+//    cleanup_po(1,tab);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(tab);
+//}
 
 
 //***************************************************************
 // ex_put_elem_var_tab
 //
-static PyObject *ex2lib_ex_put_elem_var_tab(PyObject *self, PyObject *args) {
-  int exoid, num_elem_blk, num_elem_var, rval, comp_ws, io_ws;
-  PyObject *otab;
-  PyArrayObject *tab;
-  int *ptr_tab;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iiO:ex_put_elem_var_tab",
-                        &exoid, &comp_ws, &io_ws, &num_elem_blk,
-                        &num_elem_var, &otab)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  tab = (PyArrayObject *)intarray(otab,1,1);
-  if ( tab == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_tab = (int *)PyArray_DATA(tab);
-
-  rval = ex_put_elem_var_tab(exoid,num_elem_blk,num_elem_var,ptr_tab);
-
-  cleanup_po(1,tab);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_elem_var_tab(PyObject *self, PyObject *args) {
+//  int exoid, num_elem_blk, num_elem_var, rval, comp_ws, io_ws;
+//  PyObject *otab;
+//  PyArrayObject *tab;
+//  int *ptr_tab;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iiO:ex_put_elem_var_tab",
+//                        &exoid, &comp_ws, &io_ws, &num_elem_blk,
+//                        &num_elem_var, &otab)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  tab = (PyArrayObject *)intarray(otab,1,1);
+//  if ( tab == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_tab = (int *)PyArray_DATA(tab);
+//
+//  rval = ex_put_elem_var_tab(exoid,num_elem_blk,num_elem_var,ptr_tab);
+//
+//  cleanup_po(1,tab);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_elem_var
 //
-static PyObject *ex2lib_ex_get_elem_var(PyObject *self, PyObject *args) {
-  int exoid, time_step, elem_var_index, elem_blk_id, num_elem_this_blk;
-  int num_nodes_per_elem, num_attr, rval, comp_ws, io_ws, fdtype;
-  npy_intp npy_num_elem_this_blk;
-  char elem_type[MAX_STR_LENGTH+1];
-  PyArrayObject *vals;
-  void *ptr_vals;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iii:ex_get_elem_var",
-                        &exoid, &comp_ws, &io_ws, &time_step,
-                        &elem_var_index, &elem_blk_id)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_elem_block(exoid,elem_blk_id,elem_type,&num_elem_this_blk,
-                           &num_nodes_per_elem,&num_attr);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  npy_num_elem_this_blk = num_elem_this_blk;
-
-  vals = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_elem_this_blk,fdtype,
-                                        PyArray_CORDER);
-  if ( vals == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_vals = (void *)PyArray_DATA(vals);
-
-  rval = ex_get_elem_var(exoid,time_step,elem_var_index,elem_blk_id,
-                         num_elem_this_blk,ptr_vals);
-
-  if ( rval < 0 ) {
-    cleanup_po(1,vals);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(vals);
-}
+//static PyObject *ex2lib_ex_get_elem_var(PyObject *self, PyObject *args) {
+//  int exoid, time_step, elem_var_index, elem_blk_id, num_elem_this_blk;
+//  int num_nodes_per_elem, num_attr, rval, comp_ws, io_ws, fdtype;
+//  npy_intp npy_num_elem_this_blk;
+//  char elem_type[MAX_STR_LENGTH+1];
+//  PyArrayObject *vals;
+//  void *ptr_vals;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iii:ex_get_elem_var",
+//                        &exoid, &comp_ws, &io_ws, &time_step,
+//                        &elem_var_index, &elem_blk_id)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_elem_block(exoid,elem_blk_id,elem_type,&num_elem_this_blk,
+//                           &num_nodes_per_elem,&num_attr);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  npy_num_elem_this_blk = num_elem_this_blk;
+//
+//  vals = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_elem_this_blk,fdtype,
+//                                        PyArray_CORDER);
+//  if ( vals == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_vals = (void *)PyArray_DATA(vals);
+//
+//  rval = ex_get_elem_var(exoid,time_step,elem_var_index,elem_blk_id,
+//                         num_elem_this_blk,ptr_vals);
+//
+//  if ( rval < 0 ) {
+//    cleanup_po(1,vals);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(vals);
+//}
 
 
 //***************************************************************
 // ex_put_elem_var
 //
-static PyObject *ex2lib_ex_put_elem_var(PyObject *self, PyObject *args) {
-  int exoid, time_step, elem_var_index, elem_blk_id, num_elem_this_blk;
-  int rval, comp_ws, io_ws, fdtype;
-  PyObject *ovals;
-  PyArrayObject *vals;
-  void *ptr_vals;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iiiiO:ex_put_elem_var",
-                        &exoid, &comp_ws, &io_ws, &time_step,
-                        &elem_var_index, &elem_blk_id,
-                        &num_elem_this_blk, &ovals)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  vals = (PyArrayObject *)fparray(ovals,fdtype,1,1);
-  if ( vals == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_vals = (void *)PyArray_DATA(vals);
-
-  rval = ex_put_elem_var(exoid,time_step,elem_var_index,elem_blk_id,
-                         num_elem_this_blk,ptr_vals);
-
-  cleanup_po(1,vals);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_elem_var(PyObject *self, PyObject *args) {
+//  int exoid, time_step, elem_var_index, elem_blk_id, num_elem_this_blk;
+//  int rval, comp_ws, io_ws, fdtype;
+//  PyObject *ovals;
+//  PyArrayObject *vals;
+//  void *ptr_vals;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iiiiO:ex_put_elem_var",
+//                        &exoid, &comp_ws, &io_ws, &time_step,
+//                        &elem_var_index, &elem_blk_id,
+//                        &num_elem_this_blk, &ovals)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  vals = (PyArrayObject *)fparray(ovals,fdtype,1,1);
+//  if ( vals == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_vals = (void *)PyArray_DATA(vals);
+//
+//  rval = ex_put_elem_var(exoid,time_step,elem_var_index,elem_blk_id,
+//                         num_elem_this_blk,ptr_vals);
+//
+//  cleanup_po(1,vals);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
 // ex_get_glob_vars
 //
-static PyObject *ex2lib_ex_get_glob_vars(PyObject *self, PyObject *args) {
-  int exoid, time_step, num_glob_vars, rval, comp_ws, io_ws, fdtype;
-  npy_intp npy_num_glob_vars;
-  PyArrayObject *vals;
-  void *ptr_vals;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)i:ex_get_glob_vars",
-                        &exoid, &comp_ws, &io_ws, &time_step)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  rval = ex_get_var_param(exoid,"G",&num_glob_vars);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  npy_num_glob_vars = num_glob_vars;
-
-  vals = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_glob_vars,fdtype,PyArray_CORDER);
-  if ( vals == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_vals = (void *)PyArray_DATA(vals);
-
-  rval = ex_get_glob_vars(exoid,time_step,num_glob_vars,ptr_vals);
-  if ( rval < 0 ) {
-    cleanup_po(1,vals);
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-  }
-
-  return PyArray_Return(vals);
-}
+//static PyObject *ex2lib_ex_get_glob_vars(PyObject *self, PyObject *args) {
+//  int exoid, time_step, num_glob_vars, rval, comp_ws, io_ws, fdtype;
+//  npy_intp npy_num_glob_vars;
+//  PyArrayObject *vals;
+//  void *ptr_vals;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)i:ex__get_glob_vars",
+//                        &exoid, &comp_ws, &io_ws, &time_step)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  rval = ex_get_var_param(exoid,"G",&num_glob_vars);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Inquire_Failed],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  npy_num_glob_vars = num_glob_vars;
+//
+//  vals = (PyArrayObject *)PyArray_EMPTY(1,&npy_num_glob_vars,fdtype,PyArray_CORDER);
+//  if ( vals == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_vals = (void *)PyArray_DATA(vals);
+//
+//  rval = ex_get_glob_vars(exoid,time_step,num_glob_vars,ptr_vals);
+//  if ( rval < 0 ) {
+//    cleanup_po(1,vals);
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//  }
+//
+//  return PyArray_Return(vals);
+//}
 
 
 //***************************************************************
 // ex_put_glob_vars
 //
-static PyObject *ex2lib_ex_put_glob_vars(PyObject *self, PyObject *args) {
-  int exoid, time_step, num_glob_vars, rval, comp_ws, io_ws, fdtype;
-  PyObject *ovals;
-  PyArrayObject *vals;
-  void *ptr_vals;
-
-  if (!PyArg_ParseTuple(args,
-                        "(iii)iiO:ex_put_glob_vars",
-                        &exoid, &comp_ws, &io_ws, &time_step, &num_glob_vars,
-                        &ovals)
-      )
-    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
-
-  if ( comp_ws == 4 )
-    fdtype = PyArray_FLOAT32;
-  else
-    fdtype = PyArray_FLOAT64;
-
-  vals = (PyArrayObject *)fparray(ovals,fdtype,1,1);
-  if ( vals == NULL )
-    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
-
-  ptr_vals = (void *)PyArray_DATA(vals);
-
-  rval = ex_put_glob_vars(exoid,time_step,num_glob_vars,ptr_vals);
-
-  cleanup_po(1,vals);
-  if ( rval < 0 )
-    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
-
-  return Py_BuildValue("i",rval);
-}
+//static PyObject *ex2lib_ex_put_glob_vars(PyObject *self, PyObject *args) {
+//  int exoid, time_step, num_glob_vars, rval, comp_ws, io_ws, fdtype;
+//  PyObject *ovals;
+//  PyArrayObject *vals;
+//  void *ptr_vals;
+//
+//  if (!PyArg_ParseTuple(args,
+//                        "(iii)iiO:ex_put_glob_vars",
+//                        &exoid, &comp_ws, &io_ws, &time_step, &num_glob_vars,
+//                        &ovals)
+//      )
+//    return PyErr_Format(PyExc_TypeError,ex2err[EX2ERR_Invalid_Argument],"");
+//
+//  if ( comp_ws == 4 )
+//    fdtype = PyArray_FLOAT32;
+//  else
+//    fdtype = PyArray_FLOAT64;
+//
+//  vals = (PyArrayObject *)fparray(ovals,fdtype,1,1);
+//  if ( vals == NULL )
+//    return PyErr_Format(PyExc_MemoryError,ex2err[EX2ERR_Allocation_Error],"");
+//
+//  ptr_vals = (void *)PyArray_DATA(vals);
+//
+//  rval = ex_put_glob_vars(exoid,time_step,num_glob_vars,ptr_vals);
+//
+//  cleanup_po(1,vals);
+//  if ( rval < 0 )
+//    return PyErr_Format(PyExc_ValueError,ex2err[EX2ERR_Library_Error],rval);
+//
+//  return Py_BuildValue("i",rval);
+//}
 
 
 //***************************************************************
@@ -2715,62 +2715,62 @@ static PyMethodDef ex2libmethods[] = {
    "Read coordinate names."},
   {"ex_put_coord_names", ex2lib_ex_put_coord_names, METH_VARARGS,
    "Write coordinate names."},
-  {"ex_get_node_num_map", ex2lib_ex_get_node_num_map, METH_VARARGS,
-   "Read node number map."},
-  {"ex_put_node_num_map", ex2lib_ex_put_node_num_map, METH_VARARGS,
-   "Write node number map."},
-  {"ex_get_elem_num_map", ex2lib_ex_get_elem_num_map, METH_VARARGS,
-   "Read element number map."},
-  {"ex_put_elem_num_map", ex2lib_ex_put_elem_num_map, METH_VARARGS,
-   "Write element number map."},
-  {"ex_get_map", ex2lib_ex_get_map, METH_VARARGS, "Read element order map."},
-  {"ex_put_map", ex2lib_ex_put_map, METH_VARARGS, "Write element order map."},
-  {"ex_get_elem_block", ex2lib_ex_get_elem_block, METH_VARARGS,
-   "Read element block parameters."},
-  {"ex_put_elem_block", ex2lib_ex_put_elem_block, METH_VARARGS,
-   "Write element block parameters."},
-  {"ex_get_elem_blk_ids", ex2lib_ex_get_elem_blk_ids, METH_VARARGS,
-   "Read element block ID's."},
-  {"ex_get_elem_conn", ex2lib_ex_get_elem_conn, METH_VARARGS,
-   "Read element block connectivity."},
-  {"ex_put_elem_conn", ex2lib_ex_put_elem_conn, METH_VARARGS,
-   "Write element block connectivity."},
-  {"ex_get_elem_attr", ex2lib_ex_get_elem_attr, METH_VARARGS,
-   "Read element block attributes."},
-  {"ex_put_elem_attr", ex2lib_ex_put_elem_attr, METH_VARARGS,
-   "Write element block attributes."},
-  {"ex_get_node_set_param", ex2lib_ex_get_node_set_param, METH_VARARGS,
-   "Read node set parameters."},
-  {"ex_put_node_set_param", ex2lib_ex_put_node_set_param, METH_VARARGS,
-   "Write node set parameters."},
-  {"ex_get_node_set", ex2lib_ex_get_node_set, METH_VARARGS, "Read node set."},
-  {"ex_put_node_set", ex2lib_ex_put_node_set, METH_VARARGS, "Write node set."},
-  {"ex_get_node_set_dist_fact", ex2lib_ex_get_node_set_dist_fact, METH_VARARGS,
-   "Read node set distribution factors."},
-  {"ex_put_node_set_dist_fact", ex2lib_ex_put_node_set_dist_fact, METH_VARARGS,
-   "Write node set distribution factors."},
-  {"ex_get_node_set_ids", ex2lib_ex_get_node_set_ids, METH_VARARGS,
-   "Read node set ID's."},
-  {"ex_get_concat_node_sets", ex2lib_ex_get_concat_node_sets, METH_VARARGS,
-   "Read concatenated node sets."},
-  {"ex_put_concat_node_sets", ex2lib_ex_put_concat_node_sets, METH_VARARGS,
-   "Write concatenated node sets."},
-  {"ex_get_side_set_param", ex2lib_ex_get_side_set_param, METH_VARARGS,
-   "Read side set parameters."},
-  {"ex_put_side_set_param", ex2lib_ex_put_side_set_param, METH_VARARGS,
-   "Write side set parameters."},
-  {"ex_get_side_set", ex2lib_ex_get_side_set, METH_VARARGS,
-   "Read side set"},
-  {"ex_put_side_set", ex2lib_ex_put_side_set, METH_VARARGS,
-   "Write side set"},
-  {"ex_get_side_set_dist_fact", ex2lib_ex_get_side_set_dist_fact, METH_VARARGS,
-   "Read side set distribution factors."},
-  {"ex_put_side_set_dist_fact", ex2lib_ex_put_side_set_dist_fact, METH_VARARGS,
-   "Write side set distribution factors."},
-  {"ex_get_concat_side_sets", ex2lib_ex_get_concat_side_sets, METH_VARARGS,
-   "Read concatenated side sets."},
-  {"ex_put_concat_side_sets", ex2lib_ex_put_concat_side_sets, METH_VARARGS,
-   "Write concatenated side sets."},
+//  {"ex_get_node_num_map", ex2lib_ex_get_node_num_map, METH_VARARGS,
+//   "Read node number map."},
+//  {"ex_put_node_num_map", ex2lib_ex_put_node_num_map, METH_VARARGS,
+//   "Write node number map."},
+//  {"ex_get_elem_num_map", ex2lib_ex_get_elem_num_map, METH_VARARGS,
+//   "Read element number map."},
+//  {"ex_put_elem_num_map", ex2lib_ex_put_elem_num_map, METH_VARARGS,
+//   "Write element number map."},
+//  {"ex_get_map", ex2lib_ex_get_map, METH_VARARGS, "Read element order map."},
+//  {"ex_put_map", ex2lib_ex_put_map, METH_VARARGS, "Write element order map."},
+//  {"ex_get_elem_block", ex2lib_ex_get_elem_block, METH_VARARGS,
+//   "Read element block parameters."},
+//  {"ex_put_elem_block", ex2lib_ex_put_elem_block, METH_VARARGS,
+//   "Write element block parameters."},
+//  {"ex_get_elem_blk_ids", ex2lib_ex_get_elem_blk_ids, METH_VARARGS,
+//   "Read element block ID's."},
+//  {"ex_get_elem_conn", ex2lib_ex_get_elem_conn, METH_VARARGS,
+//   "Read element block connectivity."},
+//  {"ex_put_elem_conn", ex2lib_ex_put_elem_conn, METH_VARARGS,
+//   "Write element block connectivity."},
+//  {"ex_get_elem_attr", ex2lib_ex_get_elem_attr, METH_VARARGS,
+//   "Read element block attributes."},
+//  {"ex_put_elem_attr", ex2lib_ex_put_elem_attr, METH_VARARGS,
+//   "Write element block attributes."},
+//  {"ex_get_node_set_param", ex2lib_ex_get_node_set_param, METH_VARARGS,
+//   "Read node set parameters."},
+//  {"ex_put_node_set_param", ex2lib_ex_put_node_set_param, METH_VARARGS,
+//   "Write node set parameters."},
+//  {"ex_get_node_set", ex2lib_ex_get_node_set, METH_VARARGS, "Read node set."},
+//  {"ex_put_node_set", ex2lib_ex_put_node_set, METH_VARARGS, "Write node set."},
+//  {"ex_get_node_set_dist_fact", ex2lib_ex_get_node_set_dist_fact, METH_VARARGS,
+//   "Read node set distribution factors."},
+//  {"ex_put_node_set_dist_fact", ex2lib_ex_put_node_set_dist_fact, METH_VARARGS,
+//   "Write node set distribution factors."},
+//  {"ex_get_node_set_ids", ex2lib_ex_get_node_set_ids, METH_VARARGS,
+//   "Read node set ID's."},
+//  {"ex_get_concat_node_sets", ex2lib_ex_get_concat_node_sets, METH_VARARGS,
+//   "Read concatenated node sets."},
+//  {"ex_put_concat_node_sets", ex2lib_ex_put_concat_node_sets, METH_VARARGS,
+//   "Write concatenated node sets."},
+//  {"ex_get_side_set_param", ex2lib_ex_get_side_set_param, METH_VARARGS,
+//   "Read side set parameters."},
+//  {"ex_put_side_set_param", ex2lib_ex_put_side_set_param, METH_VARARGS,
+//   "Write side set parameters."},
+//  {"ex_get_side_set", ex2lib_ex_get_side_set, METH_VARARGS,
+//   "Read side set"},
+//  {"ex_put_side_set", ex2lib_ex_put_side_set, METH_VARARGS,
+//   "Write side set"},
+//  {"ex_get_side_set_dist_fact", ex2lib_ex_get_side_set_dist_fact, METH_VARARGS,
+//   "Read side set distribution factors."},
+//  {"ex_put_side_set_dist_fact", ex2lib_ex_put_side_set_dist_fact, METH_VARARGS,
+//   "Write side set distribution factors."},
+//  {"ex_get_concat_side_sets", ex2lib_ex_get_concat_side_sets, METH_VARARGS,
+//   "Read concatenated side sets."},
+//  {"ex_put_concat_side_sets", ex2lib_ex_put_concat_side_sets, METH_VARARGS,
+//   "Write concatenated side sets."},
   {"ex_get_prop_names", ex2lib_ex_get_prop_names, METH_VARARGS,
    "Read property array names."},
   {"ex_put_prop_names", ex2lib_ex_put_prop_names, METH_VARARGS,
@@ -2783,32 +2783,32 @@ static PyMethodDef ex2libmethods[] = {
    "Read object property array."},
   {"ex_put_prop_array", ex2lib_ex_put_prop_array, METH_VARARGS,
    "Write object property array."},
-  {"ex_get_var_param", ex2lib_ex_get_var_param, METH_VARARGS,
-   "Read results variables parameters."},
-  {"ex_put_var_param", ex2lib_ex_put_var_param, METH_VARARGS,
-   "Write results variables parameters."},
-  {"ex_get_var_names", ex2lib_ex_get_var_names, METH_VARARGS,
-   "Read results variables names."},
-  {"ex_put_var_names", ex2lib_ex_put_var_names, METH_VARARGS,
-   "Write results variables names."},
+//  {"ex_get_var_param", ex2lib_ex_get_var_param, METH_VARARGS,
+//   "Read results variables parameters."},
+//  {"ex_put_var_param", ex2lib_ex_put_var_param, METH_VARARGS,
+//   "Write results variables parameters."},
+//  {"ex_get_var_names", ex2lib_ex_get_var_names, METH_VARARGS,
+//   "Read results variables names."},
+//  {"ex_put_var_names", ex2lib_ex_put_var_names, METH_VARARGS,
+//   "Write results variables names."},
   {"ex_get_time", ex2lib_ex_get_time, METH_VARARGS,
    "Read time value for a time step."},
   {"ex_put_time", ex2lib_ex_put_time, METH_VARARGS,
    "Write time value for a time step."},
-  {"ex_get_elem_var_tab", ex2lib_ex_get_elem_var_tab, METH_VARARGS,
-   "Read element truth table."},
-  {"ex_put_elem_var_tab", ex2lib_ex_put_elem_var_tab, METH_VARARGS,
-   "Write element truth table."},
-  {"ex_get_elem_var", ex2lib_ex_get_elem_var, METH_VARARGS,
-   "Read element variable values at a time step."},
-  {"ex_put_elem_var", ex2lib_ex_put_elem_var, METH_VARARGS,
-   "Write element variable values at a time step."},
-  {"ex_get_glob_vars", ex2lib_ex_get_glob_vars, METH_VARARGS,
-   "Read global variables values at a time step."},
-  {"ex_put_glob_vars", ex2lib_ex_put_glob_vars, METH_VARARGS,
-   "Write global variables values at a time step."},
-  {"ex_get_nodal_var", ex2lib_ex_get_nodal_var, METH_VARARGS,
-   "Read nodal variable values at a time step."},
+//  {"ex_get_elem_var_tab", ex2lib_ex_get_elem_var_tab, METH_VARARGS,
+//   "Read element truth table."},
+//  {"ex_put_elem_var_tab", ex2lib_ex_put_elem_var_tab, METH_VARARGS,
+//   "Write element truth table."},
+//  {"ex_get_elem_var", ex2lib_ex_get_elem_var, METH_VARARGS,
+//   "Read element variable values at a time step."},
+//  {"ex_put_elem_var", ex2lib_ex_put_elem_var, METH_VARARGS,
+//   "Write element variable values at a time step."},
+//  {"ex_get_glob_vars", ex2lib_ex_get_glob_vars, METH_VARARGS,
+//   "Read global variables values at a time step."},
+//  {"ex_put_glob_vars", ex2lib_ex_put_glob_vars, METH_VARARGS,
+//   "Write global variables values at a time step."},
+//  {"ex_get_nodal_var", ex2lib_ex_get_nodal_var, METH_VARARGS,
+//   "Read nodal variable values at a time step."},
   {"ex_put_nodal_var", ex2lib_ex_put_nodal_var, METH_VARARGS,
    "Write nodal variable values at a time step."},
   {NULL, NULL, 0, NULL}

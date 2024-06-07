@@ -29,10 +29,11 @@ Description:
 //#include <mkl_lapack.h>
 //#include <mkl_cblas.h>
 //typedef MKL_INT lpk_int;
-#include <lapacke.h>
+#include <clapack.h>
+typedef __CLPK_integer lpk_int;
+//#include <lapacke.h>
+//typedef lapack_int lpk_int;
 #include <cblas.h>
-
-typedef lapack_int lpk_int;
 
 //
 // WORKER FUNCTION PROTOTYPES

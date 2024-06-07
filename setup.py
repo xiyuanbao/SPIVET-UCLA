@@ -14,8 +14,10 @@ include_dirs = [
     lbpath + '/numpy/numarray',
     np.get_include(),
     'lib/pivlib/exodusII',
-    '/usr/include',
-    '/usr/include/lapacke'
+    # 'lib/pivlib/exodus',
+    '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers',
+    # '/usr/include',
+    # '/usr/include/lapacke'
 ]
 
 # Setup C modules.
@@ -36,6 +38,14 @@ module = Extension(
     libraries=['netcdf']
 )
 ext_modules.append(module)
+
+# module = Extension(
+#     'spivet.pivlib.exolib',
+#     sources=glob.glob('lib/spivet/pivlib/exodus/*.c'),
+#     include_dirs=include_dirs,
+#     libraries=['netcdf']
+# )
+# ext_modules.append(module)
 
 module = Extension(
     'spivet.flolib.flotracec',

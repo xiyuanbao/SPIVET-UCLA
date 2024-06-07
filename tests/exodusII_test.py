@@ -73,7 +73,7 @@ def check(idstr, xval, rval):
 
     return rval
 
-
+import pdb;pdb.set_trace()
 fh = ex2.ex_create(tfname,ex2.exc['EX_CLOBBER'],8,8)
 excheck("ex_create", 
       fh[0])
