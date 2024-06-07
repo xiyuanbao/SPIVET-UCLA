@@ -17,11 +17,9 @@ http://www.gnu.org/copyleft/gpl.html
 Description:
     Runs various validation tests on the pivsim module.
 """
-
 from spivet import pivlib
 from numpy import *
 import os, vtk, hashlib
-from PIL import Image
 import unittest, StringIO, sys
 from os import path
 
@@ -572,14 +570,13 @@ class testSimOctree(unittest.TestCase):
 
     def testOctreeVTKINode(self):
         ofname = "%s/octree" % self.ofp
-	print "I am here: %s" % (ofname)
         self.ot.dump2vtk(ofname,None)
-        
+
         kfname = "%s/octree-inode-known.vtk" % self.dfp
         kpts   = getPoints(kfname)
-    
+
         tpts = getPoints("%s-INODE.vtk" % ofname)
-        
+
         d = abs(tpts -kpts) < self.eps
         self.assertTrue( d.all() )
 
@@ -591,7 +588,7 @@ class testSimOctree(unittest.TestCase):
         kpts   = getPoints(kfname)
     
         tpts = getPoints("%s-LNODE.vtk" % ofname)
-        
+
         d = abs(tpts -kpts) < self.eps
         self.assertTrue( d.all() )
 
@@ -864,7 +861,7 @@ class testSimEnv(unittest.TestCase):
 
         self.assertEqual(len(insc),1)          # Number of intersections.
         self.assertTrue(insc[0].exflg)         # Exit.
-        self.assertTrue((v < self.eps).all())  
+        self.assertTrue((v < self.eps).all())
 
 
 #################################################################
@@ -912,16 +909,14 @@ class testTraceRectangle(unittest.TestCase):
         ofname = "%s-RAYS-C0.vtk" % self.bofname
         tpts   = getPoints(ofname)
         kfname = "%s/simenv-rect-rays-known.vtk" % self.dfp
-        kpts   = getPoints(kfname)        
-
+        kpts   = getPoints(kfname)
         d = abs(tpts -kpts) < self.eps
         self.assertTrue( d.all(), "RAYS" )
 
         ofname = "%s-LNODE.vtk" % self.bofname
         tpts   = getPoints(ofname)
         kfname = "%s/simenv-rect-lnode-known.vtk" % self.dfp
-        kpts   = getPoints(kfname)        
-
+        kpts   = getPoints(kfname)
         d = abs(tpts -kpts) < self.eps
         self.assertTrue( d.all(), "LNODE" )
         
@@ -998,31 +993,31 @@ class testTraceBitmapRectangle(unittest.TestCase):
 
         # Redirect stdout for chatty functions.
         self.sobfr = StringIO.StringIO()
-        sys.stdout = self.sobfr        
+        sys.stdout = self.sobfr
 
         # Create test object.
         pos    = (-1000.,0.,0.)
         orient = (0.,0.,0.)
         prm    = (15.,768,4.65E-3,50,4.65E-3)
         sc     = pivlib.SimCamera(pos,orient,prm)
-        
+
         pos    = (5.,0.,0.)
         orient = (pi/6.,5.*pi/6.,0.)
         prm    = (10.,100.,100.)
         ln     = None
         ro     = pivlib.SimRectangle(pos,orient,prm,ln)
-        
+
         bitmap = ones((100,100),dtype=float)
         bitmap[10:60,50:80] = 0.
         ro.setBitmap(bitmap)
-        
+
         prm = (1200.,500.,500.)
         n   = 1.
         se  = pivlib.SimEnv(prm,n)
         se.addObject(ro)
         se.addCamera(sc)
         se.image()
-        
+
         self.ofname  = "%s/surface-img-render.png" % self.ofp
         self.kfname  = "%s/surface-img-render-known.png" % self.dfp
         pivlib.imwrite(sc.bitmap,self.ofname,vmin=0.,vmax=1.)
@@ -1038,7 +1033,7 @@ class testTraceBitmapRectangle(unittest.TestCase):
         fh = open(self.kfname,'r')
         kg = fh.read()
         fh.close()
-        
+
         tm = hashlib.md5()
         tm.update(og)
         km = hashlib.md5()
@@ -1096,12 +1091,12 @@ class testTraceSurfaceRender(unittest.TestCase):
         fh = open(self.kfname,'r')
         kg = fh.read()
         fh.close()
-        
+
         tm = hashlib.md5()
         tm.update(og)
         km = hashlib.md5()
         km.update(kg)
-        
+
         self.assertEqual(tm.hexdigest(),km.hexdigest())
 
 

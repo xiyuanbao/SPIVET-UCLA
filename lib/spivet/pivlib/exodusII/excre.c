@@ -53,6 +53,7 @@
 *****************************************************************************/
 #include "exodusII.h"
 #include "exodusII_int.h"
+#include "stdlib.h"
 
 /*
  * creates a new EXODUS II file and returns an id that can subsequently 

@@ -1,0 +1,9 @@
+*.pyc
+.idea/*
+.python-version
+test-output/*
+tests/test-output/*
+build/*
+venv/*
+__pycache__
+*/__pycache__
